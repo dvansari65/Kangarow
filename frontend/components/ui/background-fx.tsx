@@ -14,8 +14,9 @@ export const BackgroundFX = (): React.ReactElement => (
         }}
       />
       {/* glows */}
-      <div className="absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-blue-600/20 blur-[120px]" />
-      <div className="absolute -bottom-40 right-0 h-[400px] w-[600px] rounded-full bg-sky-500/10 blur-[120px]" />
+      <div className="absolute -top-40 left-1/2 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-brand-blue/18 blur-[120px]" />
+      <div className="absolute -bottom-40 right-0 h-[400px] w-[600px] rounded-full bg-brand-emerald/10 blur-[120px]" />
+      <div className="absolute left-10 top-48 h-44 w-44 rounded-full bg-brand-amber/8 blur-[110px]" />
     </div>
   );
   
