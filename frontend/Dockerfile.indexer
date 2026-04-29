@@ -1,0 +1,29 @@
+# Use the official Node.js 22 image as a parent image
+FROM node:22-slim
+
+# Install OpenSSL (required by Prisma)
+RUN apt-get update -y && apt-get install -y openssl
+
+# Set the working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the Prisma schema
+COPY prisma ./prisma
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Copy the rest of the frontend source code (including scripts and idl)
+COPY . .
+
+# Set environment variable to indicate production
+ENV NODE_ENV=production
+
+# Start the indexer script
+CMD ["npx", "tsx", "scripts/indexer.ts"]
