@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   ArrowRight,
   Wallet,
@@ -17,6 +18,11 @@ import { Logo } from "@/components/ui/logo";
 import { BackgroundFX } from "@/components/ui/background-fx";
 import { Features } from "@/components/feature";
 import { HowItWorks } from "@/components/how-it-works";
+import { UseCases } from "@/components/use-cases";
+import WhyTrust from "@/components/why-trust";
+import FinalCTA from "@/components/final-cta";
+import Footer from "@/components/footer";
+
 
 type Step = number;
 type Status = "Pending" | "Paid" | "Released";
@@ -35,23 +41,30 @@ const NavBar = (): React.ReactElement => (
   <header className="relative z-30 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6">
     <Logo />
     <nav className="hidden items-center gap-8 md:flex">
-      {["Product", "Escrow", "Pricing", "Docs"].map((item) => (
+      {[
+        { label: "Product", href: "#product" },
+        { label: "Escrow", href: "#why-trust" },
+        { label: "Use Cases", href: "#use-cases" },
+        { label: "Dashboard", href: "/dashboard" },
+      ].map((item) => (
         <a
-          key={item}
-          href="#"
+          key={item.label}
+          href={item.href}
           className="text-sm font-medium text-slate-300 transition hover:text-white"
         >
-          {item}
+          {item.label}
         </a>
       ))}
     </nav>
     <div className="flex items-center gap-3">
-      <button className="hidden text-sm font-medium text-slate-300 transition hover:text-white sm:block">
-        Sign in
-      </button>
-      <Button className="rounded-full bg-white text-slate-900 hover:bg-slate-100">
-        Get started
-        <ArrowRight className="ml-1.5 h-4 w-4" />
+      <Link href="/dashboard" className="hidden text-sm font-medium text-slate-300 transition hover:text-white sm:block">
+        Open dashboard
+      </Link>
+      <Button asChild className="rounded-full bg-white text-slate-900 hover:bg-slate-100">
+        <Link href="/dashboard">
+          Get started
+          <ArrowRight className="ml-1.5 h-4 w-4" />
+        </Link>
       </Button>
     </div>
   </header>
@@ -361,7 +374,7 @@ const Hero = (): React.ReactElement => {
   }, [step]);
 
   return (
-    <section className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 pb-24 pt-10 lg:grid-cols-2 lg:gap-8 lg:pt-16">
+    <section id="product" className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 pb-24 pt-10 lg:grid-cols-2 lg:gap-8 lg:pt-16">
       <div className="relative z-10">
         <Badge
           variant="secondary"
@@ -386,20 +399,26 @@ const Hero = (): React.ReactElement => {
 
         <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
           <Button
+            asChild
             size="lg"
             className="group h-12 rounded-full bg-blue-600 px-6 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition hover:bg-blue-500 hover:shadow-blue-500/50"
           >
-            <FileText className="mr-2 h-4 w-4" />
-            Create Invoice
-            <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <Link href="/dashboard">
+              <FileText className="mr-2 h-4 w-4" />
+              Get started
+              <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
           </Button>
           <Button
+            asChild
             size="lg"
             variant="outline"
             className="h-12 rounded-full border-white/15 bg-white/5 px-6 text-sm font-semibold text-white backdrop-blur-md hover:bg-white/10 hover:text-white"
           >
-            <Wallet className="mr-2 h-4 w-4" />
-            Connect Wallet
+            <Link href="/dashboard">
+              <Wallet className="mr-2 h-4 w-4" />
+              Open dashboard
+            </Link>
           </Button>
         </div>
 
@@ -415,12 +434,16 @@ const Hero = (): React.ReactElement => {
 
 export default function HomePage(): React.ReactElement {
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0F172A] text-white">
+    <main className="relative min-h-screen overflow-hidden bg-background text-foreground">
       <BackgroundFX />
       <NavBar />
       <Hero />
       <Features />
       <HowItWorks/>
+      <UseCases/>
+      <WhyTrust/>
+      <FinalCTA />
+      <Footer />
     </main>
   );
 }
