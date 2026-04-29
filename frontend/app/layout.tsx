@@ -1,13 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-import { NavBar } from "@/components/navbar";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
+import Providers from "./providers";
 
 export const metadata: Metadata = {
   title: "AUDD Payflow — Invoice in AUD. Get paid globally.",
@@ -22,7 +15,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} h-full antialiased`}
+      className="dark h-full antialiased"
     >
       <head>
         <script
@@ -33,11 +26,12 @@ export default function RootLayout({
         />
       </head>
       <body
-        className="min-h-full flex flex-col bg-[#0F172A]"
-
-        style={{ fontFamily: "var(--font-inter), system-ui, -apple-system, sans-serif" }}
+        className="min-h-full flex flex-col bg-background text-foreground"
+        style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
