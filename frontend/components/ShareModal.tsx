@@ -22,7 +22,10 @@ export function ShareModal({ invoiceId, amount, client, open, onOpenChange }: Sh
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://auddpayflow.com';
   const clusterQuery = `cluster=${encodeURIComponent(cluster)}`;
   const paymentLink = `${baseUrl}/pay/${cleanId}?${clusterQuery}`;
-  const solanaPayUrl = `solana:${baseUrl}/api/solana-pay/${cleanId}?${clusterQuery}`;
+  
+  const apiUrl = new URL(`${baseUrl}/api/solana-pay/${cleanId}`);
+  apiUrl.searchParams.append('cluster', cluster);
+  const solanaPayUrl = `solana:${encodeURIComponent(apiUrl.toString())}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(paymentLink);
