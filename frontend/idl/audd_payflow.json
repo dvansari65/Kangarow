@@ -1,5 +1,5 @@
 {
-  "address": "9EzefVPa9QWgquqB3QNpUNxgdPPeJjgZkCuvGn8dndBa",
+  "address": "C59NN5CGFnvdXP5nTATKzZu6iJWvNYVX9NTELF4F1Tes",
   "metadata": {
     "name": "audd_payflow",
     "version": "0.1.0",
@@ -156,6 +156,10 @@
         },
         {
           "name": "treasury_ata",
+          "docs": [
+            "The protocol treasury token account that collects the 0.3% fee.",
+            "In a fully production app, you should add a constraint to verify this is your treasury."
+          ],
           "writable": true
         },
         {
