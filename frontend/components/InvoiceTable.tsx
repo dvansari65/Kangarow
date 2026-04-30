@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Search, Share2, ExternalLink, Loader2 } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { ShareModal } from './ShareModal';
 import { useMutation } from '@tanstack/react-query';
-import { releaseEscrow, getInjectedWallet, type PhantomProvider } from '@/lib/solana-payflow';
+import { getInjectedWallet, releaseEscrow } from '@/lib/solana-payflow';
+import { useSolanaWallet } from './wallet/solana-wallet-provider';
 
 export interface UIInvoice {
   id: string;
@@ -23,14 +24,7 @@ export function InvoiceTable({ invoices = [] }: { invoices?: UIInvoice[] }) {
   const [filter, setFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [shareInvoice, setShareInvoice] = useState<UIInvoice | null>(null);
-  const [wallet, setWallet] = useState<PhantomProvider | null>(null);
-
-  useEffect(() => {
-    const injected = getInjectedWallet();
-    if (injected) {
-      injected.connect({ onlyIfTrusted: true }).then(() => setWallet(injected)).catch(() => {});
-    }
-  }, []);
+  const { wallet, connectWallet, cluster } = useSolanaWallet();
 
   const filters = ['All', 'Pending', 'In Escrow', 'Paid'];
 
@@ -48,16 +42,18 @@ export function InvoiceTable({ invoices = [] }: { invoices?: UIInvoice[] }) {
 
   const { mutate: handleRelease, isPending, variables: pendingReleaseInv } = useMutation({
     mutationFn: async (inv: UIInvoice) => {
-      let injected = wallet;
-      if (!injected) {
-        injected = getInjectedWallet();
-        if (!injected) throw new Error("Phantom wallet not found.");
-        await injected.connect();
-        setWallet(injected);
+      let connectedWallet = wallet;
+      if (!connectedWallet) {
+        await connectWallet();
+        connectedWallet = getInjectedWallet();
+      }
+
+      if (!connectedWallet) {
+        throw new Error("Connect your wallet first.");
       }
       
       const cleanId = inv.id.replace('#', '');
-      return releaseEscrow(injected!, { invoiceId: cleanId, merchant: inv.merchant });
+      return releaseEscrow(connectedWallet, { invoiceId: cleanId, merchant: inv.merchant }, cluster);
     },
     onSuccess: () => {
       alert("Escrow released successfully! Indexer will update the status shortly.");

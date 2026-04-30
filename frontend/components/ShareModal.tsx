@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Copy, Check, QrCode, Link as LinkIcon } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useSolanaWallet } from './wallet/solana-wallet-provider';
 
 interface ShareModalProps {
   invoiceId: string;
@@ -15,14 +16,13 @@ interface ShareModalProps {
 
 export function ShareModal({ invoiceId, amount, client, open, onOpenChange }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
+  const { cluster } = useSolanaWallet();
   const cleanId = invoiceId.replace('#', '');
-  
+
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://auddpayflow.com';
-  
-  const paymentLink = `${baseUrl}/pay/${cleanId}`;
-  
-  // The official Solana Pay encoded URL
-  const solanaPayUrl = `solana:${baseUrl}/api/solana-pay/${cleanId}`;
+  const clusterQuery = `cluster=${encodeURIComponent(cluster)}`;
+  const paymentLink = `${baseUrl}/pay/${cleanId}?${clusterQuery}`;
+  const solanaPayUrl = `solana:${baseUrl}/api/solana-pay/${cleanId}?${clusterQuery}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(paymentLink);
@@ -34,53 +34,61 @@ export function ShareModal({ invoiceId, amount, client, open, onOpenChange }: Sh
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <Dialog.Content className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-md translate-x-[-50%] translate-y-[-50%] gap-4 border border-[#E3F2FF] bg-white p-6 shadow-xl sm:rounded-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]">
-          <div className="flex flex-col space-y-1.5 text-center sm:text-left">
-            <Dialog.Title className="text-lg font-semibold leading-none tracking-tight text-[#0F172A]">
+        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-32px)] max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#E3F2FF] bg-white p-5 shadow-xl sm:p-6 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95">
+          
+          {/* Header */}
+          <div className="pr-8">
+            <Dialog.Title className="text-base font-semibold text-[#0F172A] sm:text-lg">
               Share Invoice {invoiceId}
             </Dialog.Title>
-            <Dialog.Description className="text-sm text-[#64748B]">
+            <Dialog.Description className="mt-1 text-sm text-[#64748B]">
               Send this link to {client} to collect {amount}.
             </Dialog.Description>
           </div>
-          <Dialog.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#4A9EFF] focus:ring-offset-2 disabled:pointer-events-none">
+
+          {/* Close Button */}
+          <Dialog.Close className="absolute right-4 top-4 rounded-md p-1 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-[#4A9EFF]">
             <X className="h-4 w-4 text-[#334155]" />
             <span className="sr-only">Close</span>
           </Dialog.Close>
 
-          <div className="flex flex-col items-center justify-center py-6">
-            <div className="rounded-xl border border-[#E3F2FF] bg-[#F8FBFF] p-4 shadow-sm">
-              <QRCodeSVG 
-                value={solanaPayUrl} 
-                size={200}
-                bgColor={"#F8FBFF"}
-                fgColor={"#0F172A"}
-                level={"L"}
+          {/* QR Code — always centered */}
+          <div className="my-6 flex flex-col items-center gap-3">
+            <div className="rounded-xl border border-[#E3F2FF] bg-[#F8FBFF] p-4">
+              <QRCodeSVG
+                value={solanaPayUrl}
+                size={180}
+                bgColor="#F8FBFF"
+                fgColor="#0F172A"
+                level="L"
                 includeMargin={false}
               />
             </div>
-            <p className="mt-4 flex items-center gap-2 text-sm font-medium text-[#334155]">
+            <p className="flex items-center gap-2 text-sm font-medium text-[#334155]">
               <QrCode className="h-4 w-4 text-[#4A9EFF]" />
               Scan with Phantom or Backpack
             </p>
           </div>
 
+          {/* Link Row */}
           <div className="flex flex-col gap-2">
             <label className="text-xs font-medium text-[#64748B]">Or share payment link</label>
             <div className="flex items-center gap-2">
-              <div className="flex h-10 w-full items-center rounded-lg border border-[#E3F2FF] bg-[#F8FBFF] px-3 py-2 text-sm text-[#334155]">
-                <LinkIcon className="mr-2 h-4 w-4 text-[#94A3B8]" />
-                <span className="truncate">{paymentLink}</span>
+              {/* URL box — min-w-0 + truncate fixes overflow */}
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-[#E3F2FF] bg-[#F8FBFF] px-3 py-2">
+                <LinkIcon className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+                <span className="truncate text-sm text-[#334155]">{paymentLink}</span>
               </div>
               <button
                 onClick={handleCopy}
-                className="flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#4A9EFF] px-4 text-sm font-medium text-white transition-transform active:scale-[0.98]"
+                className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#4A9EFF] px-3 text-sm font-medium text-white transition-transform active:scale-[0.98] sm:px-4"
               >
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                {copied ? "Copied" : "Copy"}
+                <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
           </div>
+
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

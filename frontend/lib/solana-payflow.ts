@@ -2,6 +2,7 @@ import type { Idl } from "@coral-xyz/anchor"
 import { Connection, PublicKey, type Transaction, type VersionedTransaction } from "@solana/web3.js"
 
 import idl from "@/idl/audd_payflow.json"
+import { getDefaultCluster, resolveRpcUrl, type SolanaCluster } from "@/lib/solana-cluster"
 
 const TOKEN_PROGRAM_ID = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
@@ -25,6 +26,7 @@ declare global {
 }
 
 export interface PayflowConfig {
+  cluster: SolanaCluster
   rpcUrl: string
   mint: PublicKey
   treasuryAta: PublicKey
@@ -36,22 +38,28 @@ interface InvoiceActionInput {
 }
 
 interface CreateInvoiceInput {
+  invoiceId?: string
   amount: number
   useEscrow: boolean
 }
 
 const getConfigValue = (value: string | undefined, label: string): string => {
+  console.log(`[Config] ${label}:`, value)
   if (!value) {
     throw new Error(`${label} is not configured. Add it to your frontend environment before using live actions.`)
   }
-
   return value
 }
 
-const getPayflowConfig = (): PayflowConfig => ({
-  rpcUrl: process.env.NEXT_PUBLIC_RPC_URL ?? "http://127.0.0.1:8899",
-  mint: new PublicKey(getConfigValue(process.env.NEXT_PUBLIC_AUDD_MINT, "NEXT_PUBLIC_AUDD_MINT")),
-  treasuryAta: new PublicKey(getConfigValue(process.env.NEXT_PUBLIC_TREASURY_ATA, "NEXT_PUBLIC_TREASURY_ATA")),
+const getPayflowConfig = (cluster: SolanaCluster = getDefaultCluster()): PayflowConfig => ({
+  cluster,
+  rpcUrl: resolveRpcUrl(cluster),
+  get mint() {
+    return new PublicKey(getConfigValue(process.env.NEXT_PUBLIC_AUDD_MINT, "NEXT_PUBLIC_AUDD_MINT"))
+  },
+  get treasuryAta() {
+    return new PublicKey(getConfigValue(process.env.NEXT_PUBLIC_TREASURY_ATA, "NEXT_PUBLIC_TREASURY_ATA"))
+  },
 })
 
 export const getPayflowConfigIssues = (): string[] => {
@@ -88,14 +96,14 @@ const deriveVaultPda = (invoice: PublicKey): PublicKey =>
 
 const getConnection = (rpcUrl: string): Connection => new Connection(rpcUrl, "confirmed")
 
-const createAnchorProgram = async (wallet: PhantomProvider) => {
+const createAnchorProgram = async (wallet: PhantomProvider, cluster?: SolanaCluster) => {
   const anchor = await import("@coral-xyz/anchor")
 
   if (!wallet.publicKey) {
     throw new Error("Connect your wallet first.")
   }
 
-  const { rpcUrl } = getPayflowConfig()
+  const { rpcUrl } = getPayflowConfig(cluster)
   const connection = getConnection(rpcUrl)
 
   const provider = new anchor.AnchorProvider(
@@ -138,11 +146,55 @@ const parseAnchorError = (error: unknown): string => {
   return "The transaction could not be completed."
 }
 
-export const createInvoice = async (wallet: PhantomProvider, input: CreateInvoiceInput): Promise<string> => {
+const requestInvoiceId = async (): Promise<string> => {
+  const response = await fetch("/api/invoices/next-id", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error("Could not reserve a new invoice ID.")
+  }
+
+  const payload = (await response.json()) as { invoiceId?: string }
+
+  if (!payload.invoiceId) {
+    throw new Error("Invoice ID service returned an invalid response.")
+  }
+
+  return payload.invoiceId
+}
+
+const registerInvoiceOwner = async (input: {
+  id: string
+  merchant: string
+  amount: string
+  useEscrow: boolean
+}) => {
+  const response = await fetch("/api/invoices/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  })
+
+  if (!response.ok) {
+    throw new Error("The invoice was created on-chain but could not be linked to your account.")
+  }
+}
+
+export const createInvoice = async (
+  wallet: PhantomProvider,
+  input: CreateInvoiceInput,
+  cluster?: SolanaCluster,
+): Promise<string> => {
   try {
-    const { mint } = getPayflowConfig()
-    const { anchor, program } = await createAnchorProgram(wallet)
-    const invoiceId = Date.now().toString()
+    const { mint } = getPayflowConfig(cluster)
+    const { anchor, program } = await createAnchorProgram(wallet, cluster)
+    const invoiceId = input.invoiceId ?? (await requestInvoiceId())
     const merchant = wallet.publicKey
 
     if (!merchant) {
@@ -164,16 +216,27 @@ export const createInvoice = async (wallet: PhantomProvider, input: CreateInvoic
       })
       .rpc()
 
+    await registerInvoiceOwner({
+      id: invoiceId,
+      merchant: merchant.toBase58(),
+      amount: toMinorUnits(input.amount).toString(),
+      useEscrow: input.useEscrow,
+    })
+
     return invoiceId
   } catch (error) {
     throw new Error(parseAnchorError(error))
   }
 }
 
-export const payInvoice = async (wallet: PhantomProvider, input: InvoiceActionInput): Promise<void> => {
+export const payInvoice = async (
+  wallet: PhantomProvider,
+  input: InvoiceActionInput,
+  cluster?: SolanaCluster,
+): Promise<void> => {
   try {
-    const { mint, treasuryAta } = getPayflowConfig()
-    const { program } = await createAnchorProgram(wallet)
+    const { mint, treasuryAta } = getPayflowConfig(cluster)
+    const { program } = await createAnchorProgram(wallet, cluster)
     const payer = wallet.publicKey
 
     if (!payer) {
@@ -203,10 +266,14 @@ export const payInvoice = async (wallet: PhantomProvider, input: InvoiceActionIn
   }
 }
 
-export const releaseEscrow = async (wallet: PhantomProvider, input: InvoiceActionInput): Promise<void> => {
+export const releaseEscrow = async (
+  wallet: PhantomProvider,
+  input: InvoiceActionInput,
+  cluster?: SolanaCluster,
+): Promise<void> => {
   try {
-    const { mint } = getPayflowConfig()
-    const { program } = await createAnchorProgram(wallet)
+    const { mint } = getPayflowConfig(cluster)
+    const { program } = await createAnchorProgram(wallet, cluster)
     const authority = wallet.publicKey
 
     if (!authority) {
@@ -233,10 +300,14 @@ export const releaseEscrow = async (wallet: PhantomProvider, input: InvoiceActio
   }
 }
 
-export const refundEscrow = async (wallet: PhantomProvider, input: InvoiceActionInput): Promise<void> => {
+export const refundEscrow = async (
+  wallet: PhantomProvider,
+  input: InvoiceActionInput,
+  cluster?: SolanaCluster,
+): Promise<void> => {
   try {
-    const { mint } = getPayflowConfig()
-    const { program } = await createAnchorProgram(wallet)
+    const { mint } = getPayflowConfig(cluster)
+    const { program } = await createAnchorProgram(wallet, cluster)
     const authority = wallet.publicKey
 
     if (!authority) {

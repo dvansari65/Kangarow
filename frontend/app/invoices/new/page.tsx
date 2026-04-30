@@ -1,40 +1,28 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, Plus, Loader2, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, Plus, Loader2, ArrowLeft, Wallet } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
-import { createInvoice, getInjectedWallet, type PhantomProvider } from '@/lib/solana-payflow';
+import { createInvoice } from '@/lib/solana-payflow';
 import Link from 'next/link';
+import { useSolanaWallet } from '@/components/wallet/solana-wallet-provider';
+import { ClusterSwitcher } from '@/components/wallet/ClusterSwitcher';
+import { toast } from 'sonner';
 
 export default function NewInvoicePage() {
   const router = useRouter();
   const [amount, setAmount] = useState<string>('');
   const [useEscrow, setUseEscrow] = useState(true);
-  const [wallet, setWallet] = useState<PhantomProvider | null>(null);
+  const { wallet, connectWallet, isConnected, isConnecting, cluster, clusterLabel, setCluster } = useSolanaWallet();
 
-  useEffect(() => {
-    const injected = getInjectedWallet();
-    if (injected) {
-      injected.connect({ onlyIfTrusted: true })
-        .then(() => setWallet(injected))
-        .catch(() => {});
-    }
-  }, []);
-
-  const connectWallet = async () => {
-    const injected = getInjectedWallet();
-    if (!injected) {
-      alert("Phantom wallet not found. Please install the extension.");
-      return;
-    }
+  const handleConnect = async () => {
     try {
-      await injected.connect();
-      setWallet(injected);
-    } catch (e: any) {
-      alert("Connection failed: " + e.message);
+      await connectWallet();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Wallet connection failed.');
     }
-  }
+  };
 
   const { mutate: handleCreate, isPending } = useMutation({
     mutationFn: async () => {
@@ -46,15 +34,16 @@ export default function NewInvoicePage() {
       const id = await createInvoice(wallet, {
         amount: Number(amount),
         useEscrow
-      });
+      }, cluster);
       return id;
     },
     onSuccess: (id) => {
-      alert(`Invoice #${id} created successfully on the blockchain!\n\nYour indexer will detect the event and add it to the dashboard momentarily.`);
+      toast.success(`Invoice #${id} created successfully on the blockchain!\n\nYour indexer will detect the event and add it to the dashboard momentarily.`)
       router.push('/dashboard');
     },
     onError: (error: Error) => {
-      alert('Failed to create invoice: ' + error.message);
+      console.log("error:",error.message)
+      toast.error('Failed to create invoice: ' + error.message)
     }
   });
 
@@ -72,6 +61,19 @@ export default function NewInvoicePage() {
         </div>
 
         <div className="p-6 space-y-6">
+          <div className="rounded-xl border border-[#E3F2FF] bg-[#F8FBFF] p-4">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold text-[#0F172A]">Settlement network</div>
+                <p className="text-xs text-[#64748B] mt-1">Choose the cluster before creating the on-chain invoice.</p>
+              </div>
+              <div className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#1565C0] border border-[#E3F2FF]">
+                {clusterLabel}
+              </div>
+            </div>
+            <ClusterSwitcher cluster={cluster} onChange={setCluster} />
+          </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-[#0F172A]">Amount (AUDD)</label>
             <div className="relative">
@@ -110,12 +112,14 @@ export default function NewInvoicePage() {
           </div>
 
           <div className="pt-4 border-t border-[#F0F7FF]">
-            {!wallet?.publicKey ? (
+            {!isConnected ? (
               <button 
-                onClick={connectWallet}
+                onClick={handleConnect}
                 className="w-full flex items-center justify-center gap-2 bg-[#0F172A] text-white rounded-xl py-3.5 font-medium transition-transform active:scale-[0.98] shadow-md shadow-slate-200"
+                disabled={isConnecting}
               >
-                Connect Wallet to Create
+                <Wallet className="w-5 h-5" />
+                {isConnecting ? 'Connecting wallet...' : 'Connect wallet to create'}
               </button>
             ) : (
               <button 

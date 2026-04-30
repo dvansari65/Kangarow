@@ -1,13 +1,24 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { PrismaClient } from '@prisma/client';
-import { ShieldCheck, Wallet, ArrowRight, ExternalLink } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { CheckoutClient } from './checkout-client';
+import { SOLANA_CLUSTER_LABELS, getDefaultCluster, isSolanaCluster, type SolanaCluster } from '@/lib/solana-cluster';
 
 const prisma = new PrismaClient();
 
-export default async function PayInvoicePage({ params }: { params: Promise<any> }) {
+export default async function PayInvoicePage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ cluster?: string }>;
+}) {
   const { id } = await params;
+  const resolvedSearchParams = await searchParams;
+  const cluster: SolanaCluster = isSolanaCluster(resolvedSearchParams.cluster)
+    ? resolvedSearchParams.cluster
+    : getDefaultCluster();
   
   const invoice = await prisma.invoice.findUnique({
     where: { id: id as string }
@@ -57,7 +68,7 @@ export default async function PayInvoicePage({ params }: { params: Promise<any> 
             <span className="text-[#64748B]">Network</span>
             <span className="font-medium text-[#0F172A] flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[#0EB07A]"></span>
-              Solana Mainnet
+              Solana {SOLANA_CLUSTER_LABELS[cluster]}
             </span>
           </div>
           <div className="flex items-center justify-between text-sm">
@@ -71,7 +82,7 @@ export default async function PayInvoicePage({ params }: { params: Promise<any> 
         {/* Actions */}
         <div className="p-6 bg-[#F8FBFF] border-t border-[#F0F7FF]">
           {invoice.status.toLowerCase() === 'pending' ? (
-            <CheckoutClient invoiceId={invoice.id} amount={amountNumber} useEscrow={invoice.useEscrow} merchant={invoice.merchant} />
+            <CheckoutClient invoiceId={invoice.id} merchant={invoice.merchant} cluster={cluster} />
           ) : (
             <div className="text-center">
               <div className="w-12 h-12 bg-[#D1FAE5] text-[#065F46] rounded-full flex items-center justify-center mx-auto mb-3">

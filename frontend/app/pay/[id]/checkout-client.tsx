@@ -1,36 +1,31 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Wallet, ArrowRight, Loader2 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
-import { payInvoice, getInjectedWallet, type PhantomProvider } from '@/lib/solana-payflow';
+import { payInvoice } from '@/lib/solana-payflow';
+import { useSolanaWallet } from '@/components/wallet/solana-wallet-provider';
+import { SOLANA_CLUSTER_LABELS, type SolanaCluster } from '@/lib/solana-cluster';
 
-export function CheckoutClient({ invoiceId, amount, useEscrow, merchant }: { invoiceId: string, amount: number, useEscrow: boolean, merchant: string }) {
-  const [wallet, setWallet] = useState<PhantomProvider | null>(null);
+export function CheckoutClient({
+  invoiceId,
+  merchant,
+  cluster,
+}: {
+  invoiceId: string;
+  merchant: string;
+  cluster: SolanaCluster;
+}) {
+  const { wallet, connectWallet, isConnected, isConnecting } = useSolanaWallet();
+  const clusterLabel = SOLANA_CLUSTER_LABELS[cluster];
 
-  useEffect(() => {
-    // Attempt silent connect if user has previously trusted the app
-    const injected = getInjectedWallet();
-    if (injected) {
-      injected.connect({ onlyIfTrusted: true })
-        .then(() => setWallet(injected))
-        .catch(() => {});
-    }
-  }, []);
-
-  const connectWallet = async () => {
-    const injected = getInjectedWallet();
-    if (!injected) {
-      alert("Phantom wallet not found. Please install the extension.");
-      return;
-    }
+  const handleConnect = async () => {
     try {
-      await injected.connect();
-      setWallet(injected);
-    } catch (e: any) {
-      alert("Connection failed: " + e.message);
+      await connectWallet();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Wallet connection failed.');
     }
-  }
+  };
 
   const { mutate: handlePay, isPending } = useMutation({
     mutationFn: async () => {
@@ -40,7 +35,7 @@ export function CheckoutClient({ invoiceId, amount, useEscrow, merchant }: { inv
       return payInvoice(wallet, {
         invoiceId: cleanId,
         merchant,
-      });
+      }, cluster);
     },
     onSuccess: () => {
       alert('Payment successful!');
@@ -52,14 +47,21 @@ export function CheckoutClient({ invoiceId, amount, useEscrow, merchant }: { inv
     }
   });
 
-  if (!wallet?.publicKey) {
+  if (!isConnected) {
     return (
-      <button 
-        onClick={connectWallet}
-        className="w-full flex items-center justify-center gap-2 bg-[#0F172A] text-white rounded-xl py-3.5 font-medium transition-transform active:scale-[0.98] shadow-lg shadow-slate-200"
-      >
-        <Wallet size={18} /> Connect Wallet to Pay
-      </button>
+      <div className="space-y-3">
+        <div className="rounded-xl border border-[#E3F2FF] bg-white px-4 py-3 text-left">
+          <div className="text-sm font-medium text-[#0F172A]">Paying on {clusterLabel}</div>
+          <p className="mt-1 text-xs text-[#64748B]">Connect your wallet first. You can change clusters from the merchant dashboard menu if needed.</p>
+        </div>
+        <button 
+          onClick={handleConnect}
+          disabled={isConnecting}
+          className="w-full flex items-center justify-center gap-2 bg-[#0F172A] text-white rounded-xl py-3.5 font-medium transition-transform active:scale-[0.98] shadow-lg shadow-slate-200 disabled:opacity-70"
+        >
+          <Wallet size={18} /> {isConnecting ? 'Connecting wallet...' : 'Connect Wallet to Pay'}
+        </button>
+      </div>
     );
   }
 
