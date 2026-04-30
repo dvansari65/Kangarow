@@ -11,6 +11,7 @@
     "indexer": "tsx scripts/indexer.ts"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.39.3",
     "@coral-xyz/anchor": "^0.32.1",
     "@prisma/client": "^6.19.3",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -28,6 +29,7 @@
     "qrcode.react": "^4.2.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {

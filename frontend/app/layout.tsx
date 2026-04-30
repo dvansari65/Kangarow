@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "./providers";
-
+import { ClerkProvider } from '@clerk/nextjs';
+import {Toaster} from "sonner"
 export const metadata: Metadata = {
   title: "AUDD Payflow — Invoice in AUD. Get paid globally.",
   description: "Create invoices, accept payments, and release funds securely with escrow on Solana.",
@@ -29,9 +30,13 @@ export default function RootLayout({
         className="min-h-full flex flex-col bg-background text-foreground"
         style={{ fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}
       >
-        <Providers>
-          {children}
-        </Providers>
+        <ClerkProvider>
+          <Providers>
+            {children}
+            <Toaster position="top-right"/>
+          </Providers>
+        </ClerkProvider>
+
       </body>
     </html>
   );
