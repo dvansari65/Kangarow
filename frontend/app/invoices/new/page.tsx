@@ -9,18 +9,24 @@ import Link from 'next/link';
 import { useSolanaWallet } from '@/components/wallet/solana-wallet-provider';
 import { ClusterSwitcher } from '@/components/wallet/ClusterSwitcher';
 import { toast } from 'sonner';
+import { ShareModal } from '@/components/ShareModal';
 
 export default function NewInvoicePage() {
   const router = useRouter();
   const [amount, setAmount] = useState<string>('');
+  const [clientName, setClientName] = useState<string>('');
   const [useEscrow, setUseEscrow] = useState(true);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [createdInvoiceId, setCreatedInvoiceId] = useState<string | null>(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { wallet, connectWallet, isConnected, isConnecting, cluster, clusterLabel, setCluster } = useSolanaWallet();
 
   const handleConnect = async () => {
     try {
       await connectWallet();
+      toast.success('Wallet connected.');
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Wallet connection failed.');
+      toast.error(error instanceof Error ? error.message : 'Wallet connection failed.');
     }
   };
 
@@ -30,7 +36,7 @@ export default function NewInvoicePage() {
       if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
         throw new Error("Please enter a valid amount.");
       }
-      
+      setStatusMessage('Preparing your invoice transaction on the testing network...');
       const id = await createInvoice(wallet, {
         amount: Number(amount),
         useEscrow
@@ -38,12 +44,15 @@ export default function NewInvoicePage() {
       return id;
     },
     onSuccess: (id) => {
-      toast.success(`Invoice #${id} created successfully on the blockchain!\n\nYour indexer will detect the event and add it to the dashboard momentarily.`)
-      router.push('/dashboard');
+      setStatusMessage(null);
+      toast.success(`Invoice #${id} created successfully!`);
+      setCreatedInvoiceId(id);
+      setIsShareModalOpen(true);
     },
     onError: (error: Error) => {
       console.log("error:",error.message)
-      toast.error('Failed to create invoice: ' + error.message)
+      setStatusMessage(null);
+      toast.error('Failed to create invoice: ' + error.message);
     }
   });
 
@@ -61,11 +70,18 @@ export default function NewInvoicePage() {
         </div>
 
         <div className="p-6 space-y-6">
+          <div className="rounded-xl border border-[#D9EBFF] bg-[#F5FAFF] px-4 py-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#4A9EFF]">Testing network</div>
+            <p className="mt-1 text-sm text-[#52637A]">
+              This invoice will be created on <span className="font-medium text-[#0F172A]">{clusterLabel}</span>.
+            </p>
+          </div>
+
           <div className="rounded-xl border border-[#E3F2FF] bg-[#F8FBFF] p-4">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-semibold text-[#0F172A]">Settlement network</div>
-                <p className="text-xs text-[#64748B] mt-1">Choose the cluster before creating the on-chain invoice.</p>
+                <p className="text-xs text-[#64748B] mt-1">Choose the testing cluster before creating the on-chain invoice.</p>
               </div>
               <div className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#1565C0] border border-[#E3F2FF]">
                 {clusterLabel}
@@ -74,19 +90,34 @@ export default function NewInvoicePage() {
             <ClusterSwitcher cluster={cluster} onChange={setCluster} />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-[#0F172A]">Amount (AUDD)</label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#64748B] font-medium">A$</span>
-              <input 
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="100.00"
-                className="w-full pl-10 pr-4 py-3 bg-white border border-[#E3F2FF] rounded-xl text-[#0F172A] font-medium focus:ring-2 focus:ring-[#4A9EFF] focus:outline-none transition-shadow"
-              />
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[#0F172A]">Amount (AUDD)</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#64748B] font-medium">A$</span>
+                <input 
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="100.00"
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-[#E3F2FF] rounded-xl text-[#0F172A] font-medium focus:ring-2 focus:ring-[#4A9EFF] focus:outline-none transition-shadow"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-[#0F172A]">Client Name (Optional)</label>
+              <div className="relative">
+                <input 
+                  type="text"
+                  value={clientName}
+                  onChange={(e) => setClientName(e.target.value)}
+                  placeholder="Acme Corp"
+                  className="w-full px-4 py-3 bg-white border border-[#E3F2FF] rounded-xl text-[#0F172A] font-medium focus:ring-2 focus:ring-[#4A9EFF] focus:outline-none transition-shadow"
+                />
+              </div>
             </div>
           </div>
 
@@ -112,6 +143,11 @@ export default function NewInvoicePage() {
           </div>
 
           <div className="pt-4 border-t border-[#F0F7FF]">
+            {statusMessage ? (
+              <div className="mb-4 rounded-xl border border-[#D9EBFF] bg-[#F5FAFF] px-4 py-3 text-sm text-[#52637A]">
+                {statusMessage}
+              </div>
+            ) : null}
             {!isConnected ? (
               <button 
                 onClick={handleConnect}
@@ -136,6 +172,21 @@ export default function NewInvoicePage() {
           </div>
         </div>
       </div>
+
+      {createdInvoiceId && (
+        <ShareModal
+          invoiceId={createdInvoiceId}
+          amount={amount}
+          client={clientName.trim() || 'your client'}
+          open={isShareModalOpen}
+          onOpenChange={(open) => {
+            setIsShareModalOpen(open);
+            if (!open) {
+              router.push('/dashboard');
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
