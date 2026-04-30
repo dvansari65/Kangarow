@@ -3,7 +3,10 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, Download, Settings, Copy, Check } from 'lucide-react';
+import { LayoutDashboard, FileText, Download, Settings, Copy, Check, Wallet } from 'lucide-react';
+import { UserButton } from '@clerk/nextjs';
+import { ClusterSwitcher } from './wallet/ClusterSwitcher';
+import { useSolanaWallet } from './wallet/solana-wallet-provider';
 
 interface SidebarProps {
   isMobile?: boolean;
@@ -12,13 +15,30 @@ interface SidebarProps {
 export function Sidebar({ isMobile = false }: SidebarProps) {
   const pathname = usePathname();
   const [copied, setCopied] = useState(false);
-  const walletAddress = "9Ezz...BaQ1";
-  const fullWalletAddress = "9EzzefVPa9QWgquqB3QNpUNxgdPPeJjgZkCuvGn8dndBa";
+  const {
+    walletAddress,
+    isConnected,
+    isConnecting,
+    connectWallet,
+    disconnectWallet,
+    cluster,
+    clusterLabel,
+    setCluster,
+  } = useSolanaWallet();
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(fullWalletAddress);
+    if (!walletAddress) return;
+    navigator.clipboard.writeText(walletAddress);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleConnect = async () => {
+    try {
+      await connectWallet();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Wallet connection failed.');
+    }
   };
 
   const navItems = [
@@ -81,25 +101,75 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
 
       <div className="flex-1" />
 
-      {/* Bottom wallet chip */}
-      <div className="m-4 mt-auto bg-[#0F172A] rounded-xl p-3">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-1.5">
-            <div className="w-2 h-2 bg-[#0EB07A] rounded-full animate-pulse" />
-            <span className="text-[10px] text-[#94A3B8]">Connected</span>
+      {/* User profile section */}
+      <div className="px-5 mb-2 flex items-center gap-3 bg-[#F0F7FF] py-3 mx-3 rounded-lg border border-[#E3F2FF]">
+        <UserButton afterSignOutUrl="/" />
+        <span className="text-sm font-medium text-[#0F172A] truncate">My Account</span>
+      </div>
+
+      <div className="mx-3 mb-4 rounded-2xl border border-[#D9EBFF] bg-white p-3 shadow-sm">
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${isConnected ? 'bg-[#ECFDF5] text-[#047857]' : 'bg-[#F0F7FF] text-[#1565C0]'}`}>
+              <Wallet size={16} />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold leading-5 text-[#0F172A]">
+                {isConnected ? 'Wallet connected' : 'Wallet disconnected'}
+              </div>
+              <div className="mt-0.5 text-[11px] leading-4 text-[#64748B]">
+                {isConnected ? `Ready on ${clusterLabel}` : 'Connect before creating or releasing invoices'}
+              </div>
+            </div>
           </div>
-          <span className="text-[10px] text-[#D1FAE5]">Mainnet</span>
+          <div className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${isConnected ? 'bg-[#ECFDF5] text-[#047857]' : 'bg-[#F8FBFF] text-[#64748B]'}`}>
+            {isConnected ? 'Live' : 'Idle'}
+          </div>
         </div>
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-xs text-[#94A3B8]">{walletAddress}</span>
+
+        {isConnected ? (
+          <div className="mb-3 rounded-xl border border-[#EAF2FF] bg-[#F8FBFF] px-3 py-2.5">
+            <div className="mb-1 text-[10px] font-medium uppercase tracking-[0.16em] text-[#94A3B8]">
+              Wallet
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="min-w-0 truncate font-mono text-xs text-[#475569]">{walletAddress}</span>
+              <button
+                onClick={handleCopy}
+                className="shrink-0 text-[#64748B] transition-colors hover:text-[#0F172A]"
+                title="Copy address"
+              >
+                {copied ? <Check size={12} className="text-[#0EB07A]" /> : <Copy size={12} />}
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        <div className="mb-3">
+          <div className="mb-2 text-[10px] font-medium uppercase tracking-[0.18em] text-[#94A3B8]">
+            Network
+          </div>
+          <ClusterSwitcher cluster={cluster} onChange={setCluster} compact />
+        </div>
+
+        {isConnected ? (
           <button
-            onClick={handleCopy}
-            className="text-[#64748B] hover:text-white transition-colors"
-            title="Copy address"
+            type="button"
+            onClick={() => disconnectWallet().catch(() => {})}
+            className="w-full rounded-xl border border-[#E3F2FF] bg-white px-3 py-2.5 text-sm font-medium text-[#475569] transition-colors hover:bg-[#F8FBFF]"
           >
-            {copied ? <Check size={12} className="text-[#0EB07A]" /> : <Copy size={12} />}
+            Disconnect wallet
           </button>
-        </div>
+        ) : (
+          <button
+            type="button"
+            onClick={handleConnect}
+            disabled={isConnecting}
+            className="w-full rounded-xl bg-[#4A9EFF] px-3 py-2.5 text-sm font-medium text-white shadow-sm shadow-blue-200 transition-colors hover:bg-[#3B82F6] disabled:opacity-70"
+          >
+            {isConnecting ? 'Connecting...' : 'Connect wallet'}
+          </button>
+        )}
       </div>
     </div>
   );
