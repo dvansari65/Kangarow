@@ -216,7 +216,9 @@ export const HowItWorks = (): React.ReactElement => {
     if (!sectionRef.current) return;
     gsap.registerPlugin(ScrollTrigger);
 
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia(sectionRef);
+
+    mm.add("(min-width: 768px)", () => {
       // Header
       if (headerRef.current) {
         gsap.from(headerRef.current.querySelectorAll("[data-h]"), {
@@ -408,9 +410,38 @@ export const HowItWorks = (): React.ReactElement => {
           }
         }
       });
-    }, sectionRef);
+    });
 
-    return () => ctx.revert();
+    mm.add("(max-width: 767px)", () => {
+      // Lightweight mobile animations
+      if (headerRef.current) {
+        gsap.from(headerRef.current.querySelectorAll("[data-h]"), {
+          y: 20,
+          opacity: 0,
+          duration: 0.5,
+          ease: "power2.out",
+          stagger: 0.1,
+          scrollTrigger: { trigger: headerRef.current, start: "top 90%" },
+        });
+      }
+
+      const steps = gsap.utils.toArray<HTMLElement>("[data-step]");
+      steps.forEach((step) => {
+        gsap.from(step, {
+          y: 30,
+          opacity: 0,
+          duration: 0.5,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: step,
+            start: "top 85%",
+            toggleActions: "play none none reverse",
+          },
+        });
+      });
+    });
+
+    return () => mm.revert();
   }, []);
 
   return (

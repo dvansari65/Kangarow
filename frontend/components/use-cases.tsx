@@ -341,7 +341,9 @@ export const UseCases = (): React.ReactElement => {
 
     gsap.registerPlugin(ScrollTrigger)
 
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia(sectionRef)
+
+    mm.add("(min-width: 768px)", () => {
       const headerEls = sectionRef.current?.querySelectorAll<HTMLElement>("[data-h]")
       const cards = [card1Ref.current, card2Ref.current, card3Ref.current].filter(
         Boolean,
@@ -397,9 +399,37 @@ export const UseCases = (): React.ReactElement => {
 
       // Force recalculation after fonts / images settle
       requestAnimationFrame(() => ScrollTrigger.refresh())
-    }, sectionRef)
+    })
 
-    return () => ctx.revert()
+    mm.add("(max-width: 767px)", () => {
+      // Mobile header reveal
+      const headerEls = sectionRef.current?.querySelectorAll<HTMLElement>("[data-h]")
+      if (headerEls && headerEls.length > 0) {
+        gsap.fromTo(
+          headerEls,
+          { y: 24, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.7,
+            ease: "power3.out",
+            stagger: 0.08,
+            scrollTrigger: {
+              trigger: sectionRef.current,
+              start: "top 90%",
+              once: true,
+            },
+          },
+        )
+      }
+      
+      const cards = [card1Ref.current, card2Ref.current, card3Ref.current].filter(
+        Boolean,
+      ) as HTMLElement[]
+      gsap.set(cards, { clearProps: "all" })
+    })
+
+    return () => mm.revert()
   }, [])
 
   return (
@@ -454,12 +484,12 @@ export const UseCases = (): React.ReactElement => {
         {/* Stacked Cards — cinematic scroll reveal */}
         <div
           ref={stackRef}
-          className="relative mx-auto mt-16 h-[520px] w-full max-w-5xl md:h-[580px]"
+          className="relative mx-auto mt-16 flex flex-col gap-8 md:block w-full max-w-5xl md:h-[580px]"
           style={{ perspective: "1200px" }}
         >
           <div
             ref={card1Ref}
-            className="absolute inset-0 flex items-center justify-center px-4 will-change-transform"
+            className="relative md:absolute md:inset-0 flex items-center justify-center px-4 md:will-change-transform"
           >
             <div className="w-full max-w-3xl">
               <FeaturedCard useCase={FREELANCERS} />
@@ -468,7 +498,7 @@ export const UseCases = (): React.ReactElement => {
 
           <div
             ref={card2Ref}
-            className="absolute inset-0 flex items-center justify-center px-4 will-change-transform"
+            className="relative md:absolute md:inset-0 flex items-center justify-center px-4 md:will-change-transform"
           >
             <div className="w-full max-w-3xl">
               <CompactCard useCase={DIGITAL_GOODS} />
@@ -477,7 +507,7 @@ export const UseCases = (): React.ReactElement => {
 
           <div
             ref={card3Ref}
-            className="absolute inset-0 flex items-center justify-center px-4 will-change-transform"
+            className="relative md:absolute md:inset-0 flex items-center justify-center px-4 md:will-change-transform"
           >
             <div className="w-full max-w-3xl">
               <CompactCard useCase={EXPORTERS} />

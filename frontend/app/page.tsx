@@ -332,7 +332,7 @@ const HeroAnimation = ({ step }: HeroAnimationProps): React.ReactElement => {
         <div className="absolute right-0 top-10 h-60 w-60 rounded-full bg-emerald-500/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex w-full max-w-[480px] items-center justify-center">
+      <div className="relative mx-auto flex w-full max-w-[480px] origin-top scale-[0.85] items-center justify-center sm:scale-100">
         <div className="absolute inset-0 -z-10 rounded-[2rem] bg-gradient-to-br from-white/10 via-white/5 to-transparent ring-1 ring-white/10 backdrop-blur-sm" />
 
         <div className="relative w-full p-6 sm:p-8">
@@ -440,7 +440,7 @@ export default function HomePage(): React.ReactElement {
       <Hero />
       <Features />
       <HowItWorks/>
-      <UseCases/>
+      
       <WhyTrust/>
       <FinalCTA />
       <Footer />
