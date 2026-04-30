@@ -1,3 +1,4 @@
+import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { INVOICE_STATUS_ORDER, type InvoiceApiError, type InvoiceRecord, type InvoiceStatus } from '@/lib/invoices';
@@ -9,7 +10,15 @@ const isInvoiceStatus = (value: string): value is InvoiceStatus =>
 
 export async function GET() {
   try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      const payload: InvoiceApiError = { error: "Unauthorized" };
+      return NextResponse.json(payload, { status: 401 });
+    }
+
     const invoices = await prisma.invoice.findMany({
+      where: { ownerId: userId },
       orderBy: { createdAt: 'desc' },
     });
 

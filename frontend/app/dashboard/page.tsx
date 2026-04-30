@@ -1,20 +1,23 @@
 import Link from 'next/link';
 import { Plus, TrendingUp, Clock, Shield, CheckCircle, Activity, Download } from 'lucide-react';
 import { StatCard } from '@/components/StatCard';
-import { InvoiceTable } from '@/components/InvoiceTable';
+import { InvoiceTable, type UIInvoice } from '@/components/InvoiceTable';
 import { QuickCopyAction } from '@/components/QuickCopyAction';
-import { PrismaClient } from '@prisma/client';
+import { Invoice, PrismaClient } from '@prisma/client';
+import { auth } from '@clerk/nextjs/server';
 
 const prisma = new PrismaClient();
 
-export default async function DashboardPage({ params }: { params: Promise<any> }) {
+export default async function DashboardPage({ params }: { params: Promise<Record<string, never>> }) {
   await params;
+  const { userId } = await auth();
 
-  let rawInvoices: any[] = [];
+  let rawInvoices: Invoice[] = [];
   let dbError = false;
 
   try {
     rawInvoices = await prisma.invoice.findMany({
+      where: userId ? { ownerId: userId } : undefined,
       orderBy: { createdAt: 'desc' }
     });
   } catch (error) {
@@ -23,7 +26,7 @@ export default async function DashboardPage({ params }: { params: Promise<any> }
   }
 
   // Map database entries to UI format
-  const invoices = rawInvoices.map((inv) => {
+  const invoices: UIInvoice[] = rawInvoices.map((inv) => {
     const amountNumber = Number(inv.amount) / 1_000_000;
     const clientName = inv.payer ? `${inv.payer.slice(0,4)}...${inv.payer.slice(-4)}` : 'Anonymous Client';
     
@@ -40,7 +43,7 @@ export default async function DashboardPage({ params }: { params: Promise<any> }
       avatarText: textColors[colorHash],
       amount: amountNumber.toLocaleString('en-US', { style: 'currency', currency: 'AUD' }),
       date: new Date(inv.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
-      status: inv.status.toLowerCase() as any,
+      status: inv.status.toLowerCase() as UIInvoice['status'],
       merchant: inv.merchant,
     };
   });
@@ -86,7 +89,7 @@ export default async function DashboardPage({ params }: { params: Promise<any> }
             Good morning, Merchant
           </h1>
           <p className="text-sm text-[#64748B] mt-0.5">
-            Here's what's happening with your invoices.
+            Here&apos;s what&apos;s happening with your invoices.
           </p>
         </div>
         <Link href="/invoices/new">
