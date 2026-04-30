@@ -29,7 +29,7 @@
 
   --ring: 217 91% 60%;
 
-  --page: 0 0% 100%;
+  --page: 210 100% 98%;
   --surface: 210 40% 98%;
   --surface-muted: 210 40% 96%;
   --surface-strong: 214 32% 91%;
@@ -62,7 +62,7 @@
   --input: 217 24% 22%;
   --ring: 217 91% 60%;
 
-  --page: 222 47% 8%;
+  --page: 210 100% 98%;
   --surface: 221 39% 12%;
   --surface-muted: 217 33% 17%;
   --surface-strong: 222 41% 10%;
@@ -108,11 +108,14 @@
 }
 
 @layer base {
+  html {
+    @apply bg-page;
+  }
   * {
     @apply border-border;
   }
   body {
-    @apply bg-page text-foreground;
+    @apply min-h-screen bg-page text-foreground;
   }
 }
 
