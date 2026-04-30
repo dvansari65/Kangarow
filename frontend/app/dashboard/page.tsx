@@ -11,7 +11,6 @@ const prisma = new PrismaClient();
 export default async function DashboardPage({ params }: { params: Promise<Record<string, never>> }) {
   await params;
   const { userId } = await auth();
-
   let rawInvoices: Invoice[] = [];
   let dbError = false;
 

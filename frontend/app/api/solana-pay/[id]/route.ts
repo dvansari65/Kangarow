@@ -186,11 +186,7 @@ function getAuddMintForCluster(cluster: string): string | undefined {
     return process.env.NEXT_PUBLIC_AUDD_MINT_LOCALNET ?? process.env.NEXT_PUBLIC_AUDD_MINT;
   }
 
-  if (cluster === 'devnet') {
-    return process.env.NEXT_PUBLIC_AUDD_MINT_DEVNET ?? process.env.NEXT_PUBLIC_AUDD_MINT;
-  }
-
-  return process.env.NEXT_PUBLIC_AUDD_MINT_MAINNET ?? process.env.NEXT_PUBLIC_AUDD_MINT;
+  return process.env.NEXT_PUBLIC_AUDD_MINT_DEVNET ?? process.env.NEXT_PUBLIC_AUDD_MINT;
 }
 
 function getTreasuryAtaForCluster(cluster: string): string | undefined {
@@ -198,9 +194,5 @@ function getTreasuryAtaForCluster(cluster: string): string | undefined {
     return process.env.NEXT_PUBLIC_TREASURY_ATA_LOCALNET ?? process.env.NEXT_PUBLIC_TREASURY_ATA;
   }
 
-  if (cluster === 'devnet') {
-    return process.env.NEXT_PUBLIC_TREASURY_ATA_DEVNET ?? process.env.NEXT_PUBLIC_TREASURY_ATA;
-  }
-
-  return process.env.NEXT_PUBLIC_TREASURY_ATA_MAINNET ?? process.env.NEXT_PUBLIC_TREASURY_ATA;
+  return process.env.NEXT_PUBLIC_TREASURY_ATA_DEVNET ?? process.env.NEXT_PUBLIC_TREASURY_ATA;
 }
