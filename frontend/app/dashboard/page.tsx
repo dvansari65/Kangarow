@@ -27,17 +27,29 @@ export default async function DashboardPage({ params }: { params: Promise<Record
   // Map database entries to UI format
   const invoices: UIInvoice[] = rawInvoices.map((inv) => {
     const amountNumber = Number(inv.amount) / 1_000_000;
-    const clientName = inv.payer ? `${inv.payer.slice(0,4)}...${inv.payer.slice(-4)}` : 'Anonymous Client';
+    // Determine the best display name for the client
+    let displayClient = inv.clientName || 'Anonymous Client';
+    if (!inv.clientName && inv.payer) {
+      displayClient = `${inv.payer.slice(0,4)}...${inv.payer.slice(-4)}`;
+    }
     
-    // Quick random color hash based on ID for the avatar
+    // Quick random colors hash based on ID for the avatar
     const colorHash = inv.id.charCodeAt(0) % 3;
     const bgColors = ['bg-[#E3F2FF]', 'bg-[#FEF3C7]', 'bg-[#D1FAE5]'];
     const textColors = ['text-[#1565C0]', 'text-[#92400E]', 'text-[#065F46]'];
 
+    // Generate initials based on available info
+    let initials = 'AN';
+    if (inv.clientName) {
+      initials = inv.clientName.substring(0, 2).toUpperCase();
+    } else if (inv.payer) {
+      initials = inv.payer.substring(0, 2).toUpperCase();
+    }
+
     return {
       id: `#${inv.id}`,
-      client: clientName,
-      initials: inv.payer ? inv.payer.slice(0, 2).toUpperCase() : 'AN',
+      clientName: displayClient,
+      initials,
       avatarBg: bgColors[colorHash],
       avatarText: textColors[colorHash],
       amount: amountNumber.toLocaleString('en-US', { style: 'currency', currency: 'AUD' }),
