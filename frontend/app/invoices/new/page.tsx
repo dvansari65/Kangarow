@@ -39,7 +39,8 @@ export default function NewInvoicePage() {
       setStatusMessage('Preparing your invoice transaction on the testing network...');
       const id = await createInvoice(wallet, {
         amount: Number(amount),
-        useEscrow
+        useEscrow,
+        clientName: clientName.trim() || undefined
       }, cluster);
       return id;
     },
