@@ -8,6 +8,7 @@ import { useMutation } from '@tanstack/react-query';
 import { getInjectedWallet, releaseEscrow } from '@/lib/solana-payflow';
 import { useSolanaWallet } from './wallet/solana-wallet-provider';
 import { toast } from 'sonner';
+import { AuddLogo } from './AuddLogo';
 
 export interface UIInvoice {
   id: string;
@@ -108,8 +109,8 @@ export function InvoiceTable({ invoices = [] }: { invoices?: UIInvoice[] }) {
                 <span className="text-sm font-medium text-[#0F172A] truncate">{inv.clientName}</span>
                 <StatusBadge status={inv.status} />
               </div>
-              <div className="text-xs text-[#64748B] mb-0.5">
-                {inv.id} · {inv.amount}
+              <div className="flex items-center gap-1.5 text-xs text-[#64748B] mb-0.5">
+                {inv.id} · <div className="flex items-center gap-0.5"><AuddLogo className="w-3 h-3 text-[#64748B]" color="currentColor" />{inv.amount}</div>
               </div>
               <div className="text-xs text-[#94A3B8]">{inv.date}</div>
             </div>
@@ -168,7 +169,12 @@ export function InvoiceTable({ invoices = [] }: { invoices?: UIInvoice[] }) {
                   <span className="text-sm text-[#0F172A] font-medium">{inv.clientName}</span>
                 </div>
               </td>
-              <td className="px-5 py-4 font-medium text-[#0F172A] text-sm">{inv.amount}</td>
+              <td className="px-5 py-4 font-medium text-[#0F172A] text-sm">
+                <div className="flex items-center gap-1.5">
+                  <AuddLogo className="w-4 h-4" />
+                  {inv.amount}
+                </div>
+              </td>
               <td className="px-5 py-4 text-sm text-[#64748B]">{inv.date}</td>
               <td className="px-5 py-4">
                 <StatusBadge status={inv.status} />
