@@ -8,6 +8,7 @@ import { Sidebar } from './Sidebar';
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { UserButton } from '@clerk/nextjs';
 import { useSolanaWallet } from './wallet/solana-wallet-provider';
+import { toast } from 'sonner';
 
 export function MobileHeader() {
   const [open, setOpen] = useState(false);
@@ -17,7 +18,7 @@ export function MobileHeader() {
     try {
       await connectWallet();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Wallet connection failed.');
+      toast.error(error instanceof Error ? error.message : 'Wallet connection failed.');
     }
   };
 
