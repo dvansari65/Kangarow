@@ -8,6 +8,7 @@ import { createInvoice } from '@/lib/solana-payflow';
 import Link from 'next/link';
 import { useSolanaWallet } from '@/components/wallet/solana-wallet-provider';
 import { ClusterSwitcher } from '@/components/wallet/ClusterSwitcher';
+import { AuddLogo } from '@/components/AuddLogo';
 import { toast } from 'sonner';
 import { ShareModal } from '@/components/ShareModal';
 
@@ -95,7 +96,7 @@ export default function NewInvoicePage() {
             <div className="space-y-2">
               <label className="text-sm font-medium text-[#0F172A]">Amount (AUDD)</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#64748B] font-medium">A$</span>
+                <AuddLogo className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 opacity-70" />
                 <input 
                   type="number"
                   min="0.01"
