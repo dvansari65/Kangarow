@@ -5,6 +5,7 @@ import { Wallet } from 'lucide-react';
 
 import { ClusterSwitcher } from '@/components/wallet/ClusterSwitcher';
 import { useSolanaWallet } from '@/components/wallet/solana-wallet-provider';
+import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const {
@@ -21,8 +22,9 @@ export default function SettingsPage() {
   const handleConnect = async () => {
     try {
       await connectWallet();
+      toast.success('Wallet connected.');
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Wallet connection failed.');
+      toast.error(error instanceof Error ? error.message : 'Wallet connection failed.');
     }
   };
 
@@ -37,9 +39,9 @@ export default function SettingsPage() {
 
       <section className="rounded-2xl border border-[#E3F2FF] bg-white p-5 shadow-sm">
         <div className="mb-4">
-          <h2 className="text-base font-semibold text-[#0F172A]">Active network</h2>
+          <h2 className="text-base font-semibold text-[#0F172A]">Testing network</h2>
           <p className="mt-1 text-sm text-[#64748B]">
-            The selected cluster controls how this device creates invoices and sends transactions. Current network: {clusterLabel}.
+            The selected network controls how this device creates invoices and sends transactions during testing. Current network: {clusterLabel}.
           </p>
         </div>
         <ClusterSwitcher cluster={cluster} onChange={setCluster} />
