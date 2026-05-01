@@ -7,6 +7,7 @@ import { LayoutDashboard, FileText, Download, Settings, Copy, Check, Wallet } fr
 import { UserButton } from '@clerk/nextjs';
 import { ClusterSwitcher } from './wallet/ClusterSwitcher';
 import { useSolanaWallet } from './wallet/solana-wallet-provider';
+import { toast } from 'sonner';
 
 interface SidebarProps {
   isMobile?: boolean;
@@ -37,7 +38,7 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
     try {
       await connectWallet();
     } catch (error) {
-      alert(error instanceof Error ? error.message : 'Wallet connection failed.');
+      toast.error(error instanceof Error ? error.message : 'Wallet connection failed.');
     }
   };
 
@@ -147,7 +148,7 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
 
         <div className="mb-3">
           <div className="mb-2 text-[10px] font-medium uppercase tracking-[0.18em] text-[#94A3B8]">
-            Network
+            Testing network
           </div>
           <ClusterSwitcher cluster={cluster} onChange={setCluster} compact />
         </div>
