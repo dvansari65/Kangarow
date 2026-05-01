@@ -8,11 +8,14 @@ skip-lint = false
 [programs.localnet]
 audd_payflow = "C59NN5CGFnvdXP5nTATKzZu6iJWvNYVX9NTELF4F1Tes"
 
+[programs.devnet]
+audd_payflow = "C59NN5CGFnvdXP5nTATKzZu6iJWvNYVX9NTELF4F1Tes"
+
 [registry]
-url = "http://127.0.0.1:8899"
+url = "https://api.devnet.solana.com"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
