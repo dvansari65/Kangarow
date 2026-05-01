@@ -3,6 +3,7 @@ import { Plus, TrendingUp, Clock, Shield, CheckCircle, Activity, Download } from
 import { StatCard } from '@/components/StatCard';
 import { InvoiceTable, type UIInvoice } from '@/components/InvoiceTable';
 import { QuickCopyAction } from '@/components/QuickCopyAction';
+import { AuddLogo } from '@/components/AuddLogo';
 import { Invoice, PrismaClient } from '@prisma/client';
 import { auth } from '@clerk/nextjs/server';
 
@@ -52,7 +53,7 @@ export default async function DashboardPage({ params }: { params: Promise<Record
       initials,
       avatarBg: bgColors[colorHash],
       avatarText: textColors[colorHash],
-      amount: amountNumber.toLocaleString('en-US', { style: 'currency', currency: 'AUD' }),
+      amount: amountNumber.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       date: new Date(inv.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
       status: inv.status.toLowerCase() as UIInvoice['status'],
       merchant: inv.merchant,
@@ -113,7 +114,7 @@ export default async function DashboardPage({ params }: { params: Promise<Record
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
         <StatCard
           label="Total earned"
-          value={`A$${totalEarned.toLocaleString()}`}
+          value={<div className="flex items-center gap-1.5"><AuddLogo className="w-5 h-5" />{totalEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>}
           footer="All time revenue"
           footerColor="text-[#0EB07A]"
           icon={TrendingUp}
@@ -123,7 +124,7 @@ export default async function DashboardPage({ params }: { params: Promise<Record
         <StatCard
           label="Pending payment"
           value={pendingCount.toString()}
-          footer={`A$${pendingAmount.toLocaleString()} outstanding`}
+          footer={<div className="flex items-center gap-1"><AuddLogo className="w-3 h-3" />{pendingAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} outstanding</div>}
           footerColor="text-[#F6A623]"
           icon={Clock}
           iconBg="bg-[#FEF3C7]"
@@ -131,7 +132,7 @@ export default async function DashboardPage({ params }: { params: Promise<Record
         />
         <StatCard
           label="In escrow"
-          value={`A$${escrowAmount.toLocaleString()}`}
+          value={<div className="flex items-center gap-1.5"><AuddLogo className="w-5 h-5" />{escrowAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>}
           footer={`${escrowCount} invoices funded`}
           footerColor="text-[#4A9EFF]"
           icon={Shield}
