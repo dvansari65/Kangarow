@@ -7,10 +7,10 @@ import { ShareModal } from './ShareModal';
 import { useMutation } from '@tanstack/react-query';
 import { getInjectedWallet, releaseEscrow } from '@/lib/solana-payflow';
 import { useSolanaWallet } from './wallet/solana-wallet-provider';
+import { toast } from 'sonner';
 
 export interface UIInvoice {
   id: string;
-  client: string;
   initials: string;
   avatarBg: string;
   avatarText: string;
@@ -18,6 +18,7 @@ export interface UIInvoice {
   date: string;
   status: 'pending' | 'funded' | 'paid' | 'cancelled';
   merchant: string;
+  clientName:string
 }
 
 export function InvoiceTable({ invoices = [] }: { invoices?: UIInvoice[] }) {
@@ -34,7 +35,7 @@ export function InvoiceTable({ invoices = [] }: { invoices?: UIInvoice[] }) {
       if (filter === 'In Escrow' && inv.status.toLowerCase() !== 'funded') return false;
       if (filter === 'Paid' && inv.status.toLowerCase() !== 'paid') return false;
     }
-    if (search && !inv.client.toLowerCase().includes(search.toLowerCase()) && !inv.id.toLowerCase().includes(search.toLowerCase())) {
+    if (search && !inv.clientName.toLowerCase().includes(search.toLowerCase()) && !inv.id.toLowerCase().includes(search.toLowerCase())) {
       return false;
     }
     return true;
@@ -56,10 +57,10 @@ export function InvoiceTable({ invoices = [] }: { invoices?: UIInvoice[] }) {
       return releaseEscrow(connectedWallet, { invoiceId: cleanId, merchant: inv.merchant }, cluster);
     },
     onSuccess: () => {
-      alert("Escrow released successfully! Indexer will update the status shortly.");
+      toast.success('Escrow released. The dashboard will refresh once the indexer syncs the event.');
     },
     onError: (error: Error) => {
-      alert("Failed to release escrow: " + error.message);
+      toast.error("Failed to release escrow: " + error.message);
     }
   });
 
@@ -104,7 +105,7 @@ export function InvoiceTable({ invoices = [] }: { invoices?: UIInvoice[] }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-sm font-medium text-[#0F172A] truncate">{inv.client}</span>
+                <span className="text-sm font-medium text-[#0F172A] truncate">{inv.clientName}</span>
                 <StatusBadge status={inv.status} />
               </div>
               <div className="text-xs text-[#64748B] mb-0.5">
@@ -164,7 +165,7 @@ export function InvoiceTable({ invoices = [] }: { invoices?: UIInvoice[] }) {
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${inv.avatarBg} ${inv.avatarText}`}>
                     {inv.initials}
                   </div>
-                  <span className="text-sm text-[#0F172A] font-medium">{inv.client}</span>
+                  <span className="text-sm text-[#0F172A] font-medium">{inv.clientName}</span>
                 </div>
               </td>
               <td className="px-5 py-4 font-medium text-[#0F172A] text-sm">{inv.amount}</td>
@@ -217,7 +218,7 @@ export function InvoiceTable({ invoices = [] }: { invoices?: UIInvoice[] }) {
           onOpenChange={(open) => !open && setShareInvoice(null)} 
           invoiceId={shareInvoice.id} 
           amount={shareInvoice.amount} 
-          client={shareInvoice.client} 
+          client={shareInvoice.clientName} 
         />
       )}
     </div>
