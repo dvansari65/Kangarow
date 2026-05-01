@@ -1,19 +1,18 @@
 import { clusterApiUrl } from "@solana/web3.js"
 
-export type SolanaCluster = "mainnet-beta" | "devnet" | "localnet"
+export type SolanaCluster = "devnet" | "localnet"
 
 export const SOLANA_CLUSTER_STORAGE_KEY = "payflow:solana-cluster"
 
-export const SOLANA_CLUSTERS: SolanaCluster[] = ["mainnet-beta", "devnet", "localnet"]
+export const SOLANA_CLUSTERS: SolanaCluster[] = ["devnet", "localnet"]
 
 export const SOLANA_CLUSTER_LABELS: Record<SolanaCluster, string> = {
-  "mainnet-beta": "Mainnet",
-  devnet: "Devnet",
-  localnet: "Localnet",
+  devnet: "Devnet (Testing)",
+  localnet: "Localnet (Testing)",
 }
 
 export const isSolanaCluster = (value: string | null | undefined): value is SolanaCluster =>
-  value === "mainnet-beta" || value === "devnet" || value === "localnet"
+  value === "devnet" || value === "localnet"
 
 export const getDefaultCluster = (): SolanaCluster => {
   const envCluster = process.env.NEXT_PUBLIC_SOLANA_DEFAULT_CLUSTER
@@ -48,11 +47,5 @@ export const resolveRpcUrl = (cluster: SolanaCluster): string => {
       clusterApiUrl("devnet")
     )
   }
-
-  return (
-    process.env.NEXT_PUBLIC_SOLANA_RPC_MAINNET ??
-    process.env.NEXT_PUBLIC_RPC_URL_MAINNET ??
-    process.env.NEXT_PUBLIC_RPC_URL ??
-    clusterApiUrl("mainnet-beta")
-  )
+  return clusterApiUrl("devnet")
 }
