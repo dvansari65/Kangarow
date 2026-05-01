@@ -41,6 +41,7 @@ interface CreateInvoiceInput {
   invoiceId?: string
   amount: number
   useEscrow: boolean
+  clientName?: string
 }
 
 const getConfigValue = (value: string | undefined, label: string): string => {
@@ -172,6 +173,7 @@ const registerInvoiceOwner = async (input: {
   merchant: string
   amount: string
   useEscrow: boolean
+  clientName?: string
 }) => {
   const response = await fetch("/api/invoices/register", {
     method: "POST",
@@ -221,6 +223,7 @@ export const createInvoice = async (
       merchant: merchant.toBase58(),
       amount: toMinorUnits(input.amount).toString(),
       useEscrow: input.useEscrow,
+      clientName: input.clientName,
     })
 
     return invoiceId
