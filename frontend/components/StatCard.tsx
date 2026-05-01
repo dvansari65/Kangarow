@@ -3,8 +3,8 @@ import { LucideIcon } from 'lucide-react';
 
 export interface StatCardProps {
   label: string;
-  value: string;
-  footer: string;
+  value: React.ReactNode;
+  footer: React.ReactNode;
   footerColor: string;
   icon: LucideIcon;
   iconBg: string;
