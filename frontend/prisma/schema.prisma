@@ -18,6 +18,7 @@ model Invoice {
   ownerId    String?
   merchant   String
   payer      String?
+  clientName String?
   amount     BigInt
   status     String
   useEscrow  Boolean
