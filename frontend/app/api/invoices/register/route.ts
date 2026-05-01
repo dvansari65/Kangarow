@@ -9,6 +9,7 @@ type RegisterInvoiceRequest = {
   merchant?: string;
   amount?: string;
   useEscrow?: boolean;
+  clientName?: string;
 };
 
 export async function POST(request: Request) {
@@ -25,7 +26,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const { id, merchant, amount, useEscrow } = body;
+  const { id, merchant, amount, useEscrow, clientName } = body;
 
   if (!id || !merchant || !amount || typeof useEscrow !== 'boolean') {
     return NextResponse.json({ error: 'Missing invoice fields' }, { status: 400 });
@@ -38,6 +39,7 @@ export async function POST(request: Request) {
       merchant,
       amount: BigInt(amount),
       useEscrow,
+      clientName,
     },
     create: {
       id,
@@ -46,6 +48,7 @@ export async function POST(request: Request) {
       amount: BigInt(amount),
       useEscrow,
       status: 'Pending',
+      clientName,
     },
   });
 
