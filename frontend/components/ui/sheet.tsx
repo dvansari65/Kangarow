@@ -3,9 +3,10 @@
 import * as React from "react"
 import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { cva, type VariantProps } from "class-variance-authority"
-import { X } from "lucide-react"
+
 
 import { cn } from "@/lib/utils"
+import { X } from "lucide-react"
 
 const Sheet = SheetPrimitive.Root
 const SheetTrigger = SheetPrimitive.Trigger
@@ -61,8 +62,8 @@ const SheetContent = React.forwardRef<
       className={cn(sheetVariants({ side }), className)}
       {...props}
     >
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-        <X className="h-4 w-4" />
+      <SheetPrimitive.Close className="absolute right-3 top-7 z-10 flex h-6 w-6 items-center justify-center rounded-lg border border-[#E3F2FF] bg-white text-[#64748B] shadow-sm transition-colors hover:bg-[#F8FBFF] hover:text-[#0F172A] focus:outline-none focus:ring-2 focus:ring-[#4A9EFF] focus:ring-offset-2 disabled:pointer-events-none">
+        <X className="h-3.5 w-3.5" strokeWidth={2.25} />
         <span className="sr-only">Close</span>
       </SheetPrimitive.Close>
       {children}
