@@ -39,7 +39,12 @@ interface EscrowRefundedEventPayload {
 }
 
 function setupConnection() {
-  const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL || "http://127.0.0.1:8899";
+  const rpcUrl = process.env.RPC_URL || process.env.NEXT_PUBLIC_RPC_URL || ""
+
+  if (!rpcUrl) {
+    throw new Error("RPC_URL is not configured for the indexer runtime.")
+  }
+
   connection = new Connection(rpcUrl, "confirmed");
   provider = new anchor.AnchorProvider(connection, new anchor.Wallet(anchor.web3.Keypair.generate()), {
     commitment: "confirmed",
