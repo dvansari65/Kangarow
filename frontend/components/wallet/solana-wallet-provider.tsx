@@ -1,12 +1,11 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 import {
   type SolanaCluster,
   SOLANA_CLUSTER_LABELS,
   getStoredCluster,
-  persistCluster,
 } from '@/lib/solana-cluster';
 import { getInjectedWallet, type PhantomProvider } from '@/lib/solana-payflow';
 
@@ -20,7 +19,6 @@ interface SolanaWalletContextValue {
   isConnecting: boolean;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => Promise<void>;
-  setCluster: (cluster: SolanaCluster) => void;
 }
 
 const SolanaWalletContext = createContext<SolanaWalletContextValue | null>(null);
@@ -29,7 +27,7 @@ const getAddressLabel = (wallet: PhantomProvider | null) => wallet?.publicKey?.t
 
 export function SolanaWalletProvider({ children }: { children: React.ReactNode }) {
   const [wallet, setWallet] = useState<PhantomProvider | null>(null);
-  const [cluster, setClusterState] = useState<SolanaCluster>(getStoredCluster);
+  const [cluster] = useState<SolanaCluster>(getStoredCluster);
   const [isConnecting, setIsConnecting] = useState(false);
 
   useEffect(() => {
@@ -54,7 +52,7 @@ export function SolanaWalletProvider({ children }: { children: React.ReactNode }
     };
   }, []);
 
-  const connectWallet = useCallback(async () => {
+  const connectWallet = React.useCallback(async () => {
     const injected = getInjectedWallet();
 
     if (!injected) {
@@ -71,16 +69,11 @@ export function SolanaWalletProvider({ children }: { children: React.ReactNode }
     }
   }, []);
 
-  const disconnectWallet = useCallback(async () => {
+  const disconnectWallet = React.useCallback(async () => {
     if (!wallet) return;
     await wallet.disconnect();
     setWallet(null);
   }, [wallet]);
-
-  const setCluster = useCallback((nextCluster: SolanaCluster) => {
-    setClusterState(nextCluster);
-    persistCluster(nextCluster);
-  }, []);
 
   const walletAddress = getAddressLabel(wallet);
 
@@ -95,9 +88,8 @@ export function SolanaWalletProvider({ children }: { children: React.ReactNode }
       isConnecting,
       connectWallet,
       disconnectWallet,
-      setCluster,
     }),
-    [wallet, walletAddress, cluster, isConnecting, connectWallet, disconnectWallet, setCluster],
+    [wallet, walletAddress, cluster, isConnecting, connectWallet, disconnectWallet],
   );
 
   return <SolanaWalletContext.Provider value={value}>{children}</SolanaWalletContext.Provider>;

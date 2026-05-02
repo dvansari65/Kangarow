@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, FileText, Download, Settings, Copy, Check, Wallet } from 'lucide-react';
 import { UserButton } from '@clerk/nextjs';
-import { ClusterSwitcher } from './wallet/ClusterSwitcher';
 import { useSolanaWallet } from './wallet/solana-wallet-provider';
 import { toast } from 'sonner';
 
@@ -22,9 +21,7 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
     isConnecting,
     connectWallet,
     disconnectWallet,
-    cluster,
     clusterLabel,
-    setCluster,
   } = useSolanaWallet();
 
   const handleCopy = () => {
@@ -143,7 +140,9 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
           </div>
         </div>
         
-        <ClusterSwitcher cluster={cluster} onChange={setCluster} />
+        <div className="rounded-xl border border-[#E3F2FF] bg-white px-3 py-2 text-xs font-medium text-[#1565C0] shadow-sm">
+          Solana {clusterLabel}
+        </div>
       </div>
     </div>
   );

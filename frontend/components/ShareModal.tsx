@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { X, Copy, Check, QrCode, Link as LinkIcon } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useSolanaWallet } from './wallet/solana-wallet-provider';
 
 interface ShareModalProps {
   invoiceId: string;
@@ -16,20 +15,19 @@ interface ShareModalProps {
 
 export function ShareModal({ invoiceId, amount, client, open, onOpenChange }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
-  const [baseUrl, setBaseUrl] = useState('https://auddpayflow.com');
-  const { cluster } = useSolanaWallet();
+  const baseUrl = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return 'https://auddpayflow.com';
+    }
 
-  useEffect(() => {
-    setBaseUrl(window.location.origin);
+    return window.location.origin;
   }, []);
 
   const cleanId = invoiceId.replace(/^#/, '');
 
-  const clusterQuery = `cluster=${encodeURIComponent(cluster)}`;
-  const paymentLink = `${baseUrl}/pay/${cleanId}?${clusterQuery}`;
+  const paymentLink = `${baseUrl}/pay/${cleanId}`;
   
   const apiUrl = new URL(`${baseUrl}/api/solana-pay/${cleanId}`);
-  apiUrl.searchParams.append('cluster', cluster);
   const solanaPayUrl = `solana:${encodeURIComponent(apiUrl.toString())}`;
 
   const handleCopy = () => {

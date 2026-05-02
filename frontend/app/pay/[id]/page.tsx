@@ -4,22 +4,17 @@ import { PrismaClient } from '@prisma/client';
 import { ShieldCheck } from 'lucide-react';
 import { CheckoutClient } from './checkout-client';
 import { AuddLogo } from '@/components/AuddLogo';
-import { SOLANA_CLUSTER_LABELS, getDefaultCluster, isSolanaCluster, type SolanaCluster } from '@/lib/solana-cluster';
+import { SOLANA_CLUSTER_LABELS, getDefaultCluster } from '@/lib/solana-cluster';
 
 const prisma = new PrismaClient();
 
 export default async function PayInvoicePage({
   params,
-  searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ cluster?: string }>;
 }) {
   const { id } = await params;
-  const resolvedSearchParams = await searchParams;
-  const cluster: SolanaCluster = isSolanaCluster(resolvedSearchParams.cluster)
-    ? resolvedSearchParams.cluster
-    : getDefaultCluster();
+  const cluster = getDefaultCluster();
   
   const invoice = await prisma.invoice.findUnique({
     where: { id: id as string }

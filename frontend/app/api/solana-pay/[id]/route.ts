@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { Connection, PublicKey, Transaction, TransactionInstruction } from '@solana/web3.js';
-import { getDefaultCluster, isSolanaCluster, resolveRpcUrl } from '@/lib/solana-cluster';
+import { getDefaultCluster, resolveRpcUrl } from '@/lib/solana-cluster';
 import idl from '@/idl/audd_payflow.json';
 
 const prisma = new PrismaClient();
@@ -32,9 +32,8 @@ export async function GET(
   { params }: { params: RouteParams }
 ) {
   const { id } = await params;
-  const { origin, searchParams } = new URL(request.url);
-  const requestedCluster = searchParams.get('cluster');
-  const cluster = isSolanaCluster(requestedCluster) ? requestedCluster : getDefaultCluster();
+  const { origin } = new URL(request.url);
+  const cluster = getDefaultCluster();
   
   const invoice = await prisma.invoice.findUnique({
     where: { id: id as string }
@@ -63,9 +62,7 @@ export async function POST(
   { params }: { params: RouteParams }
 ) {
   const { id } = await params;
-  const { searchParams } = new URL(request.url);
-  const requestedCluster = searchParams.get('cluster');
-  const cluster = isSolanaCluster(requestedCluster) ? requestedCluster : getDefaultCluster();
+  const cluster = getDefaultCluster();
   let body: SolanaPayRequestBody;
   try {
     body = await request.json();
@@ -98,8 +95,8 @@ export async function POST(
     return NextResponse.json({ error: 'Program instruction metadata is unavailable' }, { status: 500, headers: corsHeaders() });
   }
 
-  const treasuryAtaRaw = getTreasuryAtaForCluster(cluster);
-  const auddMintRaw = getAuddMintForCluster(cluster);
+  const treasuryAtaRaw = process.env.NEXT_PUBLIC_TREASURY_ATA_DEVNET ?? process.env.NEXT_PUBLIC_TREASURY_ATA;
+  const auddMintRaw = process.env.NEXT_PUBLIC_AUDD_MINT_DEVNET ?? process.env.NEXT_PUBLIC_AUDD_MINT;
 
   if (!treasuryAtaRaw || !auddMintRaw) {
     return NextResponse.json({ error: 'AUDD mint or treasury token account is not configured' }, { status: 500, headers: corsHeaders() });
@@ -179,20 +176,4 @@ function deriveVaultPda(invoice: PublicKey): PublicKey {
     [Buffer.from("vault"), invoice.toBuffer()],
     PROGRAM_ID,
   )[0];
-}
-
-function getAuddMintForCluster(cluster: string): string | undefined {
-  if (cluster === 'localnet') {
-    return process.env.NEXT_PUBLIC_AUDD_MINT_LOCALNET ?? process.env.NEXT_PUBLIC_AUDD_MINT;
-  }
-
-  return process.env.NEXT_PUBLIC_AUDD_MINT_DEVNET ?? process.env.NEXT_PUBLIC_AUDD_MINT;
-}
-
-function getTreasuryAtaForCluster(cluster: string): string | undefined {
-  if (cluster === 'localnet') {
-    return process.env.NEXT_PUBLIC_TREASURY_ATA_LOCALNET ?? process.env.NEXT_PUBLIC_TREASURY_ATA;
-  }
-
-  return process.env.NEXT_PUBLIC_TREASURY_ATA_DEVNET ?? process.env.NEXT_PUBLIC_TREASURY_ATA;
 }

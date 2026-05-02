@@ -3,15 +3,12 @@
 import Link from 'next/link';
 import { Wallet } from 'lucide-react';
 
-import { ClusterSwitcher } from '@/components/wallet/ClusterSwitcher';
 import { useSolanaWallet } from '@/components/wallet/solana-wallet-provider';
 import { toast } from 'sonner';
 
 export default function SettingsPage() {
   const {
-    cluster,
     clusterLabel,
-    setCluster,
     isConnected,
     shortAddress,
     connectWallet,
@@ -41,10 +38,12 @@ export default function SettingsPage() {
         <div className="mb-4">
           <h2 className="text-base font-semibold text-[#0F172A]">Testing network</h2>
           <p className="mt-1 text-sm text-[#64748B]">
-            The selected network controls how this device creates invoices and sends transactions during testing. Current network: {clusterLabel}.
+            This app is locked to Solana devnet for testing. Current network: {clusterLabel}.
           </p>
         </div>
-        <ClusterSwitcher cluster={cluster} onChange={setCluster} />
+        <div className="rounded-xl border border-[#E3F2FF] bg-[#F8FBFF] px-4 py-3 text-sm font-medium text-[#0F172A]">
+          Solana {clusterLabel}
+        </div>
       </section>
 
       <section className="rounded-2xl border border-[#E3F2FF] bg-white p-5 shadow-sm">

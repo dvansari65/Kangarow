@@ -7,7 +7,6 @@ import { useMutation } from '@tanstack/react-query';
 import { createInvoice } from '@/lib/solana-payflow';
 import Link from 'next/link';
 import { useSolanaWallet } from '@/components/wallet/solana-wallet-provider';
-import { ClusterSwitcher } from '@/components/wallet/ClusterSwitcher';
 import { AuddLogo } from '@/components/AuddLogo';
 import { toast } from 'sonner';
 import { ShareModal } from '@/components/ShareModal';
@@ -20,7 +19,7 @@ export default function NewInvoicePage() {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [createdInvoiceId, setCreatedInvoiceId] = useState<string | null>(null);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const { wallet, connectWallet, isConnected, isConnecting, cluster, clusterLabel, setCluster } = useSolanaWallet();
+  const { wallet, connectWallet, isConnected, isConnecting, cluster, clusterLabel } = useSolanaWallet();
 
   const handleConnect = async () => {
     try {
@@ -80,16 +79,15 @@ export default function NewInvoicePage() {
           </div>
 
           <div className="rounded-xl border border-[#E3F2FF] bg-[#F8FBFF] p-4">
-            <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-semibold text-[#0F172A]">Settlement network</div>
-                <p className="text-xs text-[#64748B] mt-1">Choose the testing cluster before creating the on-chain invoice.</p>
+                <p className="text-xs text-[#64748B] mt-1">Invoices are created on Solana devnet for testing.</p>
               </div>
               <div className="rounded-full bg-white px-3 py-1 text-xs font-medium text-[#1565C0] border border-[#E3F2FF]">
                 {clusterLabel}
               </div>
             </div>
-            <ClusterSwitcher cluster={cluster} onChange={setCluster} />
           </div>
 
           <div className="space-y-4">

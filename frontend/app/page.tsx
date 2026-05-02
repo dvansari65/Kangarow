@@ -18,7 +18,6 @@ import { Logo } from "@/components/ui/logo";
 import { BackgroundFX } from "@/components/ui/background-fx";
 import { Features } from "@/components/feature";
 import { HowItWorks } from "@/components/how-it-works";
-import { UseCases } from "@/components/use-cases";
 import WhyTrust from "@/components/why-trust";
 import FinalCTA from "@/components/final-cta";
 import Footer from "@/components/footer";
