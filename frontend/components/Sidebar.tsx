@@ -108,69 +108,42 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
         <span className="text-sm font-medium text-[#0F172A] truncate">My Account</span>
       </div>
 
-      <div className="mx-3 mb-4 rounded-2xl border border-[#D9EBFF] bg-white p-3 shadow-sm">
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-2.5">
-            <div className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${isConnected ? 'bg-[#ECFDF5] text-[#047857]' : 'bg-[#F0F7FF] text-[#1565C0]'}`}>
-              <Wallet size={16} />
+      <div className="mx-3 mb-4 flex flex-col gap-2">
+        <div className="flex items-center justify-between rounded-xl border border-[#E3F2FF] bg-white p-2.5 shadow-sm">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${isConnected ? 'bg-[#ECFDF5] text-[#047857]' : 'bg-[#F0F7FF] text-[#1565C0]'}`}>
+              <Wallet size={14} />
             </div>
-            <div className="min-w-0">
-              <div className="text-sm font-semibold leading-5 text-[#0F172A]">
-                {isConnected ? 'Wallet connected' : 'Wallet disconnected'}
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[13px] font-semibold text-[#0F172A]">
+                {isConnected ? walletAddress?.slice(0, 4) + '...' + walletAddress?.slice(-4) : 'Disconnected'}
               </div>
-              <div className="mt-0.5 text-[11px] leading-4 text-[#64748B]">
-                {isConnected ? `Ready on ${clusterLabel}` : 'Connect before creating or releasing invoices'}
+              <div className="flex items-center gap-1 text-[10px] font-medium text-[#64748B]">
+                <span className={`h-1.5 w-1.5 rounded-full ${isConnected ? 'bg-[#0EB07A]' : 'bg-[#94A3B8]'}`} />
+                {isConnected ? 'Live' : 'Idle'}
               </div>
             </div>
           </div>
-          <div className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${isConnected ? 'bg-[#ECFDF5] text-[#047857]' : 'bg-[#F8FBFF] text-[#64748B]'}`}>
-            {isConnected ? 'Live' : 'Idle'}
-          </div>
-        </div>
-
-        {isConnected ? (
-          <div className="mb-3 rounded-xl border border-[#EAF2FF] bg-[#F8FBFF] px-3 py-2.5">
-            <div className="mb-1 text-[10px] font-medium uppercase tracking-[0.16em] text-[#94A3B8]">
-              Wallet
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <span className="min-w-0 truncate font-mono text-xs text-[#475569]">{walletAddress}</span>
-              <button
-                onClick={handleCopy}
-                className="shrink-0 text-[#64748B] transition-colors hover:text-[#0F172A]"
-                title="Copy address"
-              >
-                {copied ? <Check size={12} className="text-[#0EB07A]" /> : <Copy size={12} />}
+          
+          <div className="flex shrink-0 gap-1.5">
+            {isConnected ? (
+               <>
+                 <button onClick={handleCopy} title="Copy address" className="rounded-lg bg-[#F8FBFF] p-2 text-[#64748B] transition-colors hover:bg-[#F0F7FF] hover:text-[#0F172A]">
+                   {copied ? <Check size={14} className="text-[#0EB07A]" /> : <Copy size={14} />}
+                 </button>
+                 <button onClick={() => disconnectWallet().catch(() => {})} title="Disconnect" className="rounded-lg bg-[#F8FBFF] p-2 text-[#64748B] transition-colors hover:bg-[#FEE2E2] hover:text-[#DC2626]">
+                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                 </button>
+               </>
+            ) : (
+              <button onClick={handleConnect} disabled={isConnecting} className="rounded-lg bg-[#4A9EFF] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#3B82F6] disabled:opacity-70">
+                {isConnecting ? '...' : 'Connect'}
               </button>
-            </div>
+            )}
           </div>
-        ) : null}
-
-        <div className="mb-3">
-          <div className="mb-2 text-[10px] font-medium uppercase tracking-[0.18em] text-[#94A3B8]">
-            Testing network
-          </div>
-          <ClusterSwitcher cluster={cluster} onChange={setCluster} compact />
         </div>
-
-        {isConnected ? (
-          <button
-            type="button"
-            onClick={() => disconnectWallet().catch(() => {})}
-            className="w-full rounded-xl border border-[#E3F2FF] bg-white px-3 py-2.5 text-sm font-medium text-[#475569] transition-colors hover:bg-[#F8FBFF]"
-          >
-            Disconnect wallet
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleConnect}
-            disabled={isConnecting}
-            className="w-full rounded-xl bg-[#4A9EFF] px-3 py-2.5 text-sm font-medium text-white shadow-sm shadow-blue-200 transition-colors hover:bg-[#3B82F6] disabled:opacity-70"
-          >
-            {isConnecting ? 'Connecting...' : 'Connect wallet'}
-          </button>
-        )}
+        
+        <ClusterSwitcher cluster={cluster} onChange={setCluster} />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { PrismaClient } from '@prisma/client';
 import { ShieldCheck } from 'lucide-react';
 import { CheckoutClient } from './checkout-client';
+import { AuddLogo } from '@/components/AuddLogo';
 import { SOLANA_CLUSTER_LABELS, getDefaultCluster, isSolanaCluster, type SolanaCluster } from '@/lib/solana-cluster';
 
 const prisma = new PrismaClient();
@@ -43,8 +44,9 @@ export default async function PayInvoicePage({
           <h1 className="text-sm font-semibold uppercase tracking-widest text-[#64748B] mb-1">
             Payment Request
           </h1>
-          <h2 className="text-3xl font-bold text-[#0F172A] tracking-tight">
-            {amountNumber.toLocaleString('en-US', { style: 'currency', currency: 'AUD' })}
+          <h2 className="flex items-center justify-center gap-2 text-3xl font-bold text-[#0F172A] tracking-tight">
+            <AuddLogo className="w-8 h-8" />
+            {amountNumber.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </h2>
           <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#E3F2FF] text-[#1565C0] text-xs font-medium">
             <ShieldCheck size={14} />

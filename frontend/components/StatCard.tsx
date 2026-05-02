@@ -27,9 +27,9 @@ export function StatCard({
       </div>
       <h3 className="text-xl lg:text-2xl font-semibold text-[#0F172A] mt-3 mb-0.5">{value}</h3>
       <p className="text-xs text-[#64748B]">{label}</p>
-      <p className={`text-xs ${footerColor} mt-2 flex items-center gap-1`}>
+      <div className={`text-xs ${footerColor} mt-2 flex items-center gap-1`}>
         {footer}
-      </p>
+      </div>
     </div>
   );
 }

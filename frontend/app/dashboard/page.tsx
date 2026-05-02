@@ -114,7 +114,7 @@ export default async function DashboardPage({ params }: { params: Promise<Record
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
         <StatCard
           label="Total earned"
-          value={<div className="flex items-center gap-1.5"><AuddLogo className="w-5 h-5" />{totalEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>}
+          value={<span className="flex items-center gap-1.5"><AuddLogo className="w-5 h-5" />{totalEarned.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
           footer="All time revenue"
           footerColor="text-[#0EB07A]"
           icon={TrendingUp}
@@ -124,7 +124,7 @@ export default async function DashboardPage({ params }: { params: Promise<Record
         <StatCard
           label="Pending payment"
           value={pendingCount.toString()}
-          footer={<div className="flex items-center gap-1"><AuddLogo className="w-3 h-3" />{pendingAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} outstanding</div>}
+          footer={<span className="flex items-center gap-1"><AuddLogo className="w-3 h-3" />{pendingAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} outstanding</span>}
           footerColor="text-[#F6A623]"
           icon={Clock}
           iconBg="bg-[#FEF3C7]"
@@ -132,7 +132,7 @@ export default async function DashboardPage({ params }: { params: Promise<Record
         />
         <StatCard
           label="In escrow"
-          value={<div className="flex items-center gap-1.5"><AuddLogo className="w-5 h-5" />{escrowAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>}
+          value={<span className="flex items-center gap-1.5"><AuddLogo className="w-5 h-5" />{escrowAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>}
           footer={`${escrowCount} invoices funded`}
           footerColor="text-[#4A9EFF]"
           icon={Shield}
