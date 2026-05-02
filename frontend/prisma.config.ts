@@ -11,6 +11,7 @@ export default defineConfig({
   },
   engine: "classic",
   datasource: {
-    url: env("DATABASE_URL"),
+    // Prisma CLI commands should use the direct Supabase connection, not the pooler.
+    url: env("DIRECT_URL"),
   },
 });
