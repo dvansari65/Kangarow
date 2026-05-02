@@ -38,7 +38,7 @@ const STEP_TIMINGS: number[] = [
 
 const NavBar = (): React.ReactElement => (
   <header className="relative z-30 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6">
-    <Logo />
+    <Logo size="nav" />
     <nav className="hidden items-center gap-8 md:flex">
       {[
         { label: "Product", href: "#product" },
@@ -322,18 +322,18 @@ const FlowStepper = ({ step }: FlowStepperProps): React.ReactElement => {
 interface HeroAnimationProps {
   step: Step;
 }
-
 const HeroAnimation = ({ step }: HeroAnimationProps): React.ReactElement => {
   return (
-    <div className="relative">
-      <div className="pointer-events-none absolute -inset-10 -z-10">
+    <div className="relative flex flex-col items-center gap-4 w-full max-w-[480px]">
+      {/* Glows */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-3xl">
         <div className="absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/20 blur-3xl" />
         <div className="absolute right-0 top-10 h-60 w-60 rounded-full bg-emerald-500/10 blur-3xl" />
       </div>
 
-      <div className="relative mx-auto flex w-full max-w-[480px] origin-top scale-[0.85] items-center justify-center sm:scale-100">
-        <div className="absolute inset-0 -z-10 rounded-[2rem] bg-gradient-to-br from-white/10 via-white/5 to-transparent ring-1 ring-white/10 backdrop-blur-sm" />
-
+      {/* Card */}
+      <div className="relative w-full">
+        <div className="absolute inset-0 -z-10 rounded-4xl bg-linear-to-br from-white/10 via-white/5 to-transparent ring-1 ring-white/10 backdrop-blur-sm" />
         <div className="relative w-full p-6 sm:p-8">
           <InvoiceCard step={step} />
           <WalletPopup step={step} />
@@ -344,7 +344,6 @@ const HeroAnimation = ({ step }: HeroAnimationProps): React.ReactElement => {
     </div>
   );
 };
-
 const TrustRow = (): React.ReactElement => (
   <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3 text-xs text-slate-400">
     <div className="flex items-center gap-2">
@@ -373,8 +372,8 @@ const Hero = (): React.ReactElement => {
   }, [step]);
 
   return (
-    <section id="product" className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-center gap-12 px-6 pb-24 pt-10 lg:grid-cols-2 lg:gap-8 lg:pt-16">
-      <div className="relative z-10">
+    <section id="product" className="relative mx-auto grid w-full max-w-7xl grid-cols-1 items-start gap-12 px-6 pb-24 pt-10 lg:grid-cols-2 lg:items-center lg:gap-16 lg:pt-16">
+      <div className="relative z-10 flex flex-col">
         <Badge
           variant="secondary"
           className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-blue-200 backdrop-blur-md hover:bg-white/10"
@@ -385,7 +384,7 @@ const Hero = (): React.ReactElement => {
 
         <h1 className="text-balance text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
           Invoice in AUD.{" "}
-          <span className="bg-gradient-to-r from-blue-300 via-blue-200 to-sky-100 bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-blue-300 via-blue-200 to-sky-100 bg-clip-text text-transparent">
             Get paid globally.
           </span>
         </h1>
@@ -424,7 +423,7 @@ const Hero = (): React.ReactElement => {
         <TrustRow />
       </div>
 
-      <div className="relative">
+      <div className="relative flex items-start justify-center lg:justify-end">
         <HeroAnimation step={step} />
       </div>
     </section>
