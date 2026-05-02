@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, FileText, Download, Settings, Copy, Check, Wallet } from 'lucide-react';
 import { UserButton } from '@clerk/nextjs';
 import { useSolanaWallet } from './wallet/solana-wallet-provider';
+import { Logo } from './ui/logo';
 import { toast } from 'sonner';
 
 interface SidebarProps {
@@ -52,15 +53,18 @@ export function Sidebar({ isMobile = false }: SidebarProps) {
 
   return (
     <div className={containerClasses}>
-      {/* Logo area */}
-      <div className="px-5 pt-6 pb-5">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 bg-[#4A9EFF] text-white rounded-lg flex items-center justify-center font-semibold text-sm">
-            P
-          </div>
-          <span className="text-[#0F172A] text-lg font-semibold">Payflow</span>
-        </div>
-        <div className="text-[10px] text-[#94A3B8] tracking-wide ml-[36px]">
+      <div className="px-3 pt-5 pb-4 sm:pt-6 sm:pb-5">
+        <Link
+          href="/"
+          className="flex h-10 items-center "
+        >
+          <Logo
+            tone="dark"
+            size="nav"
+            className={`h-5 sm:h-6 ${isMobile ? 'max-w-[148px]' : 'max-w-[156px]'}`}
+          />
+        </Link>
+        <div className="mt-2 px-3 text-[10px] uppercase tracking-[0.24em] text-[#94A3B8]">
           AUDD · Solana
         </div>
       </div>
