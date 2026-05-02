@@ -5,13 +5,14 @@ import { InvoiceTable, type UIInvoice } from '@/components/InvoiceTable';
 import { QuickCopyAction } from '@/components/QuickCopyAction';
 import { AuddLogo } from '@/components/AuddLogo';
 import { Invoice, PrismaClient } from '@prisma/client';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 
 const prisma = new PrismaClient();
 
 export default async function DashboardPage({ params }: { params: Promise<Record<string, never>> }) {
   await params;
   const { userId } = await auth();
+  const user = await currentUser()
   let rawInvoices: Invoice[] = [];
   let dbError = false;
 
@@ -96,9 +97,9 @@ export default async function DashboardPage({ params }: { params: Promise<Record
       )}
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6 lg:mb-8">
-        <div>
-          <h1 className="text-xl lg:text-2xl font-semibold text-[#0F172A]">
-            Good morning, Merchant
+        <div className='mt-2'>
+          <h1 className="text-[16px] lg:text-2xl font-semibold text-[#0F172A]">
+            Good morning, {user?.firstName}
           </h1>
           <p className="text-sm text-[#64748B] mt-0.5">
             Here&apos;s what&apos;s happening with your invoices.
