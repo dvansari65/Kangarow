@@ -14,10 +14,10 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ invoiceId, amount, client, open, onOpenChange }: ShareModalProps) {
-  const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState<'web' | 'wallet' | null>(null);
   const baseUrl = useMemo(() => {
     if (typeof window === 'undefined') {
-      return 'https://auddpayflow.com';
+      return 'https://auddfrontend.vercel.app';
     }
 
     return window.location.origin;
@@ -30,10 +30,10 @@ export function ShareModal({ invoiceId, amount, client, open, onOpenChange }: Sh
   const apiUrl = new URL(`${baseUrl}/api/solana-pay/${cleanId}`);
   const solanaPayUrl = `solana:${encodeURIComponent(apiUrl.toString())}`;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(paymentLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopy = (value: string, type: 'web' | 'wallet') => {
+    navigator.clipboard.writeText(value);
+    setCopiedLink(type);
+    setTimeout(() => setCopiedLink(null), 2000);
   };
 
   return (
@@ -80,19 +80,38 @@ export function ShareModal({ invoiceId, amount, client, open, onOpenChange }: Sh
           <div className="flex flex-col gap-2">
             <label className="text-xs font-medium text-[#64748B]">Or share payment link</label>
             <div className="flex items-center gap-2">
-              {/* URL box — min-w-0 + truncate fixes overflow */}
               <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-[#E3F2FF] bg-[#F8FBFF] px-3 py-2">
                 <LinkIcon className="h-4 w-4 shrink-0 text-[#94A3B8]" />
                 <span className="truncate text-sm text-[#334155]">{paymentLink}</span>
               </div>
               <button
-                onClick={handleCopy}
+                onClick={() => handleCopy(paymentLink, 'web')}
                 className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#4A9EFF] px-3 text-sm font-medium text-white transition-transform active:scale-[0.98] sm:px-4"
               >
-                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
+                {copiedLink === 'web' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                <span className="hidden sm:inline">{copiedLink === 'web' ? 'Copied' : 'Copy'}</span>
               </button>
             </div>
+          </div>
+
+          <div className="mt-3 flex flex-col gap-2">
+            <label className="text-xs font-medium text-[#64748B]">Mobile wallet link</label>
+            <div className="flex items-center gap-2">
+              <div className="flex min-w-0 flex-1 items-center gap-2 rounded-lg border border-[#E3F2FF] bg-[#F8FBFF] px-3 py-2">
+                <QrCode className="h-4 w-4 shrink-0 text-[#94A3B8]" />
+                <span className="truncate text-sm text-[#334155]">{solanaPayUrl}</span>
+              </div>
+              <button
+                onClick={() => handleCopy(solanaPayUrl, 'wallet')}
+                className="flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-[#D9EBFF] bg-white px-3 text-sm font-medium text-[#1565C0] transition-transform active:scale-[0.98] sm:px-4"
+              >
+                {copiedLink === 'wallet' ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                <span className="hidden sm:inline">{copiedLink === 'wallet' ? 'Copied' : 'Copy'}</span>
+              </button>
+            </div>
+            <p className="text-xs text-[#64748B]">
+              Use the wallet link on mobile so Phantom or Backpack can open the payment request directly.
+            </p>
           </div>
 
         </Dialog.Content>
