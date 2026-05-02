@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Wallet, ArrowRight, Loader2 } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { Wallet, ArrowRight, Loader2, ExternalLink } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
 import { payInvoice } from '@/lib/solana-payflow';
 import { useSolanaWallet } from '@/components/wallet/solana-wallet-provider';
@@ -19,6 +19,14 @@ export function CheckoutClient({
 }) {
   const { wallet, connectWallet, isConnected, isConnecting } = useSolanaWallet();
   const clusterLabel = SOLANA_CLUSTER_LABELS[cluster];
+  const solanaPayUrl = useMemo(() => {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    const apiUrl = new URL(`/api/solana-pay/${invoiceId.replace('#', '')}`, window.location.origin);
+    return `solana:${encodeURIComponent(apiUrl.toString())}`;
+  }, [invoiceId]);
 
   const handleConnect = async () => {
     try {
@@ -54,15 +62,28 @@ export function CheckoutClient({
       <div className="space-y-3">
         <div className="rounded-xl border border-[#E3F2FF] bg-white px-4 py-3 text-left">
           <div className="text-sm font-medium text-[#0F172A]">Paying on {clusterLabel}</div>
-          <p className="mt-1 text-xs text-[#64748B]">Connect your wallet first. This checkout is using the testing network encoded in the payment link.</p>
+          <p className="mt-1 text-xs text-[#64748B]">
+            Connect your wallet first. If you opened this invoice in a mobile browser, use the wallet button below to hand the request to Phantom or Backpack.
+          </p>
         </div>
-        <button 
-          onClick={handleConnect}
-          disabled={isConnecting}
-          className="w-full flex items-center justify-center gap-2 bg-[#0F172A] text-white rounded-xl py-3.5 font-medium transition-transform active:scale-[0.98] shadow-lg shadow-slate-200 disabled:opacity-70"
-        >
-          <Wallet size={18} /> {isConnecting ? 'Connecting wallet...' : 'Connect Wallet to Pay'}
-        </button>
+        <div className="space-y-2">
+          <button 
+            onClick={handleConnect}
+            disabled={isConnecting}
+            className="w-full flex items-center justify-center gap-2 bg-[#0F172A] text-white rounded-xl py-3.5 font-medium transition-transform active:scale-[0.98] shadow-lg shadow-slate-200 disabled:opacity-70"
+          >
+            <Wallet size={18} /> {isConnecting ? 'Connecting wallet...' : 'Connect Wallet to Pay'}
+          </button>
+          {solanaPayUrl ? (
+            <a
+              href={solanaPayUrl}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-[#D9EBFF] bg-white py-3.5 font-medium text-[#1565C0] transition-transform active:scale-[0.98]"
+            >
+              <ExternalLink size={18} />
+              Open in Mobile Wallet
+            </a>
+          ) : null}
+        </div>
       </div>
     );
   }
