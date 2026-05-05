@@ -28,7 +28,7 @@ export function ShareModal({ invoiceId, amount, client, open, onOpenChange }: Sh
   const paymentLink = `${baseUrl}/pay/${cleanId}`;
   
   const apiUrl = new URL(`${baseUrl}/api/solana-pay/${cleanId}`);
-  const solanaPayUrl = `solana:${encodeURIComponent(apiUrl.toString())}`;
+  const solanaPayUrl = `solana:${apiUrl.toString()}?cluster=devnet`;
 
   const handleCopy = (value: string, type: 'web' | 'wallet') => {
     navigator.clipboard.writeText(value);
